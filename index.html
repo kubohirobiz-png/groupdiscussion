@@ -128,6 +128,9 @@
   .chat-input{ display:flex; gap:6px;}
   .chat-input textarea{ flex:1; resize:none; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--card2); color:var(--text); font-size:.9rem; font-family:inherit;}
   .chat-input button{ flex:0 0 auto; border:0; border-radius:10px; padding:0 16px; font-weight:700; background:var(--accent); color:#0b1120; cursor:pointer;}
+  .mic-btn{ flex:0 0 auto; border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:0 13px; font-size:1.15rem; cursor:pointer;}
+  .mic-btn.rec{ background:var(--danger); color:#fff; border-color:var(--danger); animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   .sim-actions{ display:flex; gap:6px; margin-top:8px;}
   .sim-actions button{ flex:1; border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:9px 2px; font-size:.78rem; font-weight:600; cursor:pointer;}
   #simEnd{ border-color:var(--ok); color:var(--ok);}
@@ -192,7 +195,8 @@
       <div class="card" style="padding:10px">
         <div class="chat" id="chatBox"></div>
         <div class="chat-input">
-          <textarea id="chatText" rows="2" placeholder="あなたの発言を入力…"></textarea>
+          <textarea id="chatText" rows="2" placeholder="あなたの発言を入力（🎤で音声入力）…"></textarea>
+          <button id="micBtn" class="mic-btn" title="音声入力">🎤</button>
           <button id="chatSend">送信</button>
         </div>
         <div class="sim-actions">
@@ -568,6 +572,19 @@ const chatText=document.getElementById('chatText');
 function sendUser(){ const t=chatText.value.trim(); if(!t)return; addMsg('あなた', sim.userRole, t, 'me'); chatText.value=''; aiTurn(); }
 document.getElementById('chatSend').onclick=sendUser;
 chatText.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendUser(); } });
+
+/* --- 音声入力（Web Speech API） --- */
+const micBtn=document.getElementById('micBtn');
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recog=null, recing=false, baseText='';
+if(!SR){ micBtn.style.display='none'; }
+else{
+  recog=new SR(); recog.lang='ja-JP'; recog.interimResults=true; recog.continuous=true;
+  recog.onresult=e=>{ let fin='',itm=''; for(let i=e.resultIndex;i<e.results.length;i++){ const tr=e.results[i][0].transcript; if(e.results[i].isFinal)fin+=tr; else itm+=tr; } if(fin)baseText=baseText+fin; chatText.value=baseText+itm; };
+  recog.onend=()=>{ recing=false; micBtn.classList.remove('rec'); chatText.value=baseText; };
+  recog.onerror=ev=>{ recing=false; micBtn.classList.remove('rec'); if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){ alert('マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。'); } };
+  micBtn.onclick=()=>{ if(recing){ recog.stop(); return; } baseText=chatText.value?chatText.value+' ':''; try{ recog.start(); recing=true; micBtn.classList.add('rec'); chatText.focus(); }catch(e){} };
+}
 document.getElementById('simAdvance').onclick=aiTurn;
 document.getElementById('simQuit').onclick=()=>{ if(confirm('模擬GDを中止して設定に戻りますか？')){ stopSimTimer(); document.getElementById('simChat').style.display='none'; document.getElementById('simSetup').style.display='block'; } };
 document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; stopSimTimer(); runFeedback(); } };

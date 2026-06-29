@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>グループディスカッション練習アプリ</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449;
+    --accent:#38bdf8; --accent2:#818cf8;
+    --text:#e2e8f0; --sub:#94a3b8; --line:#334155;
+    --ok:#34d399; --warn:#fbbf24; --danger:#f87171;
+    --r-mc:#38bdf8; --r-note:#34d399; --r-time:#fbbf24; --r-pres:#f472b6;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;
+    background:linear-gradient(160deg,#0f172a,#111c33); color:var(--text);
+    line-height:1.7; padding-bottom:90px;
+  }
+  header{
+    text-align:center; padding:22px 16px 14px;
+  }
+  header h1{ font-size:1.25rem; margin:0 0 4px; letter-spacing:.02em;}
+  header p{ margin:0; color:var(--sub); font-size:.82rem;}
+  .wrap{ max-width:680px; margin:0 auto; padding:0 14px;}
+
+  /* タブ */
+  nav.tabs{
+    position:sticky; top:0; z-index:50; display:flex; gap:6px;
+    background:rgba(15,23,42,.92); backdrop-filter:blur(8px);
+    padding:10px 12px; border-bottom:1px solid var(--line); max-width:680px; margin:0 auto;
+  }
+  nav.tabs button{
+    flex:1; border:0; border-radius:12px; padding:10px 4px; font-size:.8rem; font-weight:700;
+    background:var(--card); color:var(--sub); cursor:pointer; transition:.15s;
+  }
+  nav.tabs button.active{ background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0b1120;}
+
+  section{ display:none; padding-top:16px; animation:fade .25s ease;}
+  section.active{ display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px;}
+  h2.title{ font-size:1.05rem; margin:4px 0 12px;}
+  .sub{ color:var(--sub); font-size:.85rem;}
+
+  /* 役割カード */
+  .role{ border-left:5px solid var(--accent);}
+  .role.mc{border-color:var(--r-mc);} .role.note{border-color:var(--r-note);}
+  .role.time{border-color:var(--r-time);} .role.pres{border-color:var(--r-pres);}
+  .role-head{ display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .role-icon{ font-size:1.5rem; width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:var(--card2); border-radius:10px; flex:0 0 auto;}
+  .role-head h3{ margin:0; font-size:1rem;}
+  .role-head .one{ color:var(--sub); font-size:.78rem; margin-top:2px;}
+  .chev{ margin-left:auto; color:var(--sub); transition:.2s; font-size:1.1rem;}
+  .role.open .chev{ transform:rotate(90deg);}
+  .role-body{ display:none; margin-top:12px; border-top:1px solid var(--line); padding-top:12px;}
+  .role.open .role-body{ display:block;}
+  .role-body h4{ margin:14px 0 6px; font-size:.83rem; color:var(--accent); letter-spacing:.03em;}
+  .role-body h4:first-child{margin-top:0;}
+  .role-body ul{ margin:0; padding-left:18px;}
+  .role-body li{ margin-bottom:5px; font-size:.88rem;}
+  .phrase{ background:var(--card2); border-radius:8px; padding:8px 10px; font-size:.85rem; margin:4px 0;}
+  .phrase b{ color:var(--r-mc);}
+
+  /* お題 */
+  .topic-display{ text-align:center; padding:26px 18px; background:linear-gradient(135deg,#1e293b,#243352); border-radius:18px; border:1px solid var(--line); margin-bottom:14px;}
+  .topic-cat{ display:inline-block; font-size:.72rem; font-weight:700; padding:4px 12px; border-radius:999px; background:var(--card2); color:var(--accent); margin-bottom:12px;}
+  .topic-text{ font-size:1.18rem; font-weight:700; min-height:2.4em; display:flex; align-items:center; justify-content:center;}
+  .topic-meta{ color:var(--sub); font-size:.8rem; margin-top:10px;}
+  .btn{ border:0; border-radius:12px; padding:13px; font-size:.92rem; font-weight:700; cursor:pointer; width:100%;}
+  .btn-main{ background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0b1120;}
+  .btn-main:active{ transform:scale(.98);}
+  .cat-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .cat-chip{ border:1px solid var(--line); background:var(--card); color:var(--sub); border-radius:999px; padding:7px 13px; font-size:.78rem; cursor:pointer; font-weight:600;}
+  .cat-chip.active{ background:var(--accent); color:#0b1120; border-color:var(--accent);}
+
+  /* タイマー */
+  .timer-display{ text-align:center; font-size:3.4rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.02em; margin:6px 0 4px;}
+  .timer-display.warn{ color:var(--warn);} .timer-display.danger{ color:var(--danger);}
+  .timer-label{ text-align:center; color:var(--sub); font-size:.82rem; margin-bottom:14px;}
+  .preset{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:14px;}
+  .preset button{ border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:8px 14px; font-size:.82rem; cursor:pointer; font-weight:600;}
+  .preset button.active{ background:var(--accent); color:#0b1120; border-color:var(--accent);}
+  .timer-ctrl{ display:flex; gap:8px;}
+  .timer-ctrl button{ flex:1; border-radius:12px; padding:13px; font-weight:700; font-size:.9rem; cursor:pointer; border:0;}
+  .b-start{ background:var(--ok); color:#06281d;}
+  .b-pause{ background:var(--warn); color:#3a2c04;}
+  .b-reset{ background:var(--card2); color:var(--text); border:1px solid var(--line);}
+
+  /* 進行の流れ */
+  .flow-step{ display:flex; gap:12px; margin-bottom:4px;}
+  .flow-num{ flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0b1120; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:.85rem;}
+  .flow-line{ flex:0 0 auto; width:30px; display:flex; justify-content:center;}
+  .flow-line::after{ content:""; width:2px; background:var(--line); flex:1;}
+  .flow-row{ display:flex; gap:12px;}
+  .flow-content{ padding-bottom:14px;}
+  .flow-content h4{ margin:4px 0 3px; font-size:.92rem;}
+  .flow-content p{ margin:0; color:var(--sub); font-size:.82rem;}
+  .flow-content .t{ display:inline-block; background:var(--card2); color:var(--accent); border-radius:6px; padding:1px 8px; font-size:.72rem; font-weight:700; margin-top:5px;}
+  .note-box{ background:rgba(56,189,248,.08); border:1px solid rgba(56,189,248,.3); border-radius:12px; padding:12px 14px; font-size:.84rem; margin-top:6px;}
+  .note-box b{ color:var(--accent);}
+  footer{ text-align:center; color:var(--sub); font-size:.72rem; padding:10px 0 4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🗣️ グループディスカッション練習アプリ</h1>
+  <p>4名1グループ／司会・書記・タイムキーパー・発表者</p>
+</header>
+
+<nav class="tabs wrap">
+  <button data-tab="roles" class="active">役割とコツ</button>
+  <button data-tab="topics">お題</button>
+  <button data-tab="timer">タイマー</button>
+  <button data-tab="flow">進行の流れ</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ===== 役割 ===== -->
+  <section id="roles" class="active">
+    <p class="sub" style="margin:0 0 14px">タップで各役割の詳しい立ち回り方・評価ポイントが開きます。まず自分の担当役を読み込み、他役の動きも把握しておくと連携できます。</p>
+    <div id="roleList"></div>
+    <div class="note-box">💡 <b>共通の心得</b>：結論を出すこと自体より「チームで協力して議論を前に進められたか」が見られています。発言量が多ければ良いわけではなく、論点を整理する・人の意見を引き出す・時間内にまとめる、といった貢献が評価されます。</div>
+  </section>
+
+  <!-- ===== お題 ===== -->
+  <section id="topics">
+    <div class="topic-display">
+      <span class="topic-cat" id="topicCat">カテゴリ</span>
+      <div class="topic-text" id="topicText">「お題を出す」を押してください</div>
+      <div class="topic-meta" id="topicMeta">想定：制限時間 15〜20分</div>
+    </div>
+    <button class="btn btn-main" id="drawBtn">🎲 お題を出す</button>
+    <div class="card" style="margin-top:14px">
+      <h2 class="title" style="font-size:.92rem">カテゴリで絞る</h2>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== タイマー ===== -->
+  <section id="timer">
+    <div class="card">
+      <div class="timer-display" id="timerDisplay">15:00</div>
+      <div class="timer-label" id="timerLabel">議論タイム</div>
+      <div class="preset" id="presetRow"></div>
+      <div class="timer-ctrl">
+        <button class="b-start" id="startBtn">スタート</button>
+        <button class="b-reset" id="resetBtn">リセット</button>
+      </div>
+    </div>
+    <div class="note-box">⏱️ タイムキーパー役の練習に。残り5分で黄色、残り1分で赤に変わり、終了時に音とバイブで知らせます（端末により対応が異なります）。</div>
+  </section>
+
+  <!-- ===== 進行の流れ ===== -->
+  <section id="flow">
+    <p class="sub" style="margin:0 0 14px">15〜20分のディスカッションを想定した標準的な進め方です。司会はこの流れを意識して時間を配分します。</p>
+    <div class="card" id="flowList"></div>
+    <div class="note-box">📝 <b>時間配分の目安（20分の場合）</b>：前提共有3分 → 論点出し4分 → 議論8分 → まとめ3分 → 発表準備2分。最初に司会が全体の時間設計を宣言すると進行がスムーズです。</div>
+  </section>
+
+</div>
+
+<footer>新卒採用GD練習用 ／ オフラインでも動作します</footer>
+
+<script>
+/* ---------- タブ ---------- */
+document.querySelectorAll('nav.tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+});
+
+/* ---------- 役割データ ---------- */
+const roles=[
+  {cls:'mc',icon:'🎯',name:'司会（ファシリテーター）',one:'議論を設計し、全員を巻き込んで前に進める',
+   role:['議論の進め方・時間配分を最初に提案し、合意をとる','論点を整理し、話が逸れたら軌道修正する','発言の少ない人に話を振り、全員参加の場をつくる'],
+   tips:['冒頭で「進め方の枠組み」を示すと一気にリードできる（例：前提確認→アイデア出し→絞り込み→まとめ）','自分の意見を押し通す人ではなく、意見を引き出し束ねる人だと意識する','「今◯◯の論点ですね」と現在地を言語化すると全員が迷わない','反対意見も「なるほど、その視点だと…」と一度受け止めてから整理する'],
+   ng:['仕切ることに必死で自分が喋りすぎる','時間管理をタイムキーパー任せにして進行が間延びする','意見が割れたとき強引に多数決で打ち切る'],
+   eval:['場の生産性を高められたか','対立を建設的にまとめられたか','全員の力を引き出せたか'],
+   phrases:['<b>枠組み提示：</b>「まず前提をそろえて、次にアイデアを出し、最後に絞り込む流れでどうでしょう？」','<b>意見を振る：</b>「◯◯さんはこの点どう思われますか？」','<b>軌道修正：</b>「いったん本来の論点に戻すと…」']},
+  {cls:'note',icon:'✍️',name:'書記',one:'意見を可視化し、議論の土台をつくる',
+   role:['出た意見・キーワードをその場で整理して記録する','話の流れや決まったことを構造化して見せる','まとめ局面で論点を一覧化し、結論づくりを助ける'],
+   tips:['ただ書くだけでなく「今出た意見はAとBですね」と要約して返すと一気に貢献度が上がる','意見をグルーピング・対比して見せると議論が前進する','記録に集中しすぎて発言ゼロにならないよう、要約のタイミングで発言する','「これは記録しておきますね」と一言添えると存在感が出る'],
+   ng:['黙々と書くだけで議論に関与しない','全部を逐語で書こうとして追いつかなくなる','自分の解釈で意見を歪めて記録する'],
+   eval:['議論を整理・構造化できたか','記録を使って議論を前進させたか','発言と記録を両立できたか'],
+   phrases:['<b>要約：</b>「今のところ意見はこの3つに整理できそうです」','<b>論点整理：</b>「賛成派は◯◯、慎重派は△△、という対立ですね」','<b>まとめ補助：</b>「決まったことを確認すると…」']},
+  {cls:'time',icon:'⏱️',name:'タイムキーパー',one:'時間を管理し、時間内に着地させる',
+   role:['全体の時間配分を司会と一緒に設計する','残り時間を適切なタイミングで知らせる','時間切れにならないよう、まとめへの移行を促す'],
+   tips:['ただ時間を読み上げるだけでなく「残り5分なのでそろそろまとめに入りましょう」と提案までする','各フェーズの残り時間も意識し、議論が長引いたら声をかける','時間に追われすぎず、議論の質とのバランスを見る','最初に司会と時間設計を共有しておくと動きやすい'],
+   ng:['時計を見るだけで何も提案しない','終了間際に突然「あと1分です」と焦らせる','時間厳守にこだわりすぎて議論を急かし台無しにする'],
+   eval:['時間内に議論を着地させられたか','単なる計測でなく進行に貢献したか','全体を俯瞰できていたか'],
+   phrases:['<b>設計：</b>「議論に10分、まとめに5分でいきましょう」','<b>中間報告：</b>「半分の時間が過ぎました。論点出しは一区切りにしますか？」','<b>収束促し：</b>「残り3分です。結論をまとめましょう」']},
+  {cls:'pres',icon:'📢',name:'発表者（プレゼンター）',one:'議論の成果を分かりやすく伝える',
+   role:['チームの結論と、その理由・プロセスを説明する','議論で出た重要な論点や工夫を盛り込む','質問に対してチームを代表して応答する'],
+   tips:['結論→理由→補足の順（PREP）で話すと伝わりやすい','「なぜその結論に至ったか」の議論プロセスも触れると深みが出る','発表役でも議論には積極参加する（議論を理解していないと発表できない）','書記のまとめと連携し、要点を取りこぼさない'],
+   ng:['議論に参加せず最後だけ出てくる','結論だけ言って理由やプロセスを説明しない','時間を超過してダラダラ話す'],
+   eval:['結論を論理的に伝えられたか','議論の中身を正確に反映できたか','簡潔さと分かりやすさがあったか'],
+   phrases:['<b>結論先出し：</b>「私たちのチームの結論は◯◯です」','<b>理由：</b>「理由は3点あります。第一に…」','<b>プロセス：</b>「当初△△という案もありましたが、××の観点から◯◯としました」']},
+];
+
+const roleList=document.getElementById('roleList');
+roles.forEach((r,i)=>{
+  const el=document.createElement('div');
+  el.className='card role '+r.cls;
+  el.innerHTML=`
+    <div class="role-head">
+      <div class="role-icon">${r.icon}</div>
+      <div>
+        <h3>${r.name}</h3>
+        <div class="one">${r.one}</div>
+      </div>
+      <div class="chev">▶</div>
+    </div>
+    <div class="role-body">
+      <h4>■ 役割・やること</h4><ul>${r.role.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>■ 高評価につながるコツ</h4><ul>${r.tips.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>■ ありがちなNG</h4><ul>${r.ng.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>■ 使えるフレーズ例</h4>${r.phrases.map(x=>`<div class="phrase">${x}</div>`).join('')}
+      <h4>■ 見られている評価ポイント</h4><ul>${r.eval.map(x=>`<li>${x}</li>`).join('')}</ul>
+    </div>`;
+  el.querySelector('.role-head').onclick=()=>el.classList.toggle('open');
+  roleList.appendChild(el);
+});
+
+/* ---------- お題データ ---------- */
+const topics={
+  '課題解決型':[
+    '若者の選挙投票率を上げるにはどうすればよいか',
+    '地方都市の人口減少を食い止める施策を提案せよ',
+    '社員のモチベーションを高める制度を考えよ',
+    'コンビニの売上を1.5倍にする方法を提案せよ',
+    '読書離れを解決する具体策を考えよ',
+    '満員電車の混雑を緩和する方法は',
+    '商店街を活性化させるアイデアを出せ',
+    '新入社員の早期離職を防ぐにはどうするか',
+    'フードロスを減らすための施策を提案せよ',
+    '地方の観光客を増やす方法を考えよ',
+  ],
+  'ディベート型':[
+    '社内公用語を英語にすべきか',
+    'リモートワークと出社、どちらを基本とすべきか',
+    '大学教育は無償化すべきか',
+    '成果主義と年功序列、どちらが望ましいか',
+    '小学校でのスマホ持ち込みを許可すべきか',
+    'AIによる採用選考に賛成か反対か',
+    'ベーシックインカムを導入すべきか',
+    '定年制は廃止すべきか',
+  ],
+  '選択型':[
+    '無人島に1つだけ持っていくなら何を選ぶか、チームで1つに決めよ',
+    '会社の福利厚生を1つ増やすなら何にするか',
+    '新規事業を始めるならどの分野か（飲食・教育・医療・娯楽から）',
+    'タイムマシンで行くなら過去か未来か、理由とともに',
+    '理想のリーダーに最も必要な資質を1つ選べ',
+    '社会人に最も必要なスキルを1つ挙げるなら',
+  ],
+  'ビジネスケース型':[
+    '当社が新たに出店するなら、どの地域・どの業態がよいか',
+    '売上が伸び悩むカフェチェーンの立て直し策を提案せよ',
+    '新商品のターゲット層とプロモーション戦略を立てよ',
+    '若者向けの新しいサブスクサービスを企画せよ',
+    'Z世代に刺さる新しいSNS機能を提案せよ',
+    '人手不足の飲食店を効率化する仕組みを考えよ',
+  ],
+  '抽象・自由':[
+    '「良い会社」とはどんな会社か',
+    '「働く」とは何か、チームの定義を作れ',
+    '10年後になくなる仕事・生まれる仕事を予想せよ',
+    '理想のチームに必要な条件を3つに絞れ',
+    '「幸せ」を測る新しい指標を考えよ',
+    '100年後の学校はどうなっているか',
+  ],
+  '哲学・価値観型':[
+    '人はなぜ約束を守らなければならないのか',
+    'なぜ人は働くのか',
+    '「正しさ」とは何か',
+    '人はなぜ嘘をついてはいけないのか',
+    '本当の「自由」とは何か',
+    '「平等」と「公平」の違いは何か',
+    'なぜルールやマナーは必要なのか',
+    '「成長する」とはどういうことか',
+    '人にとって「信頼」とは何か',
+    'お金で買えない価値とは何か',
+  ],
+};
+const allCats=Object.keys(topics);
+let activeCat='すべて';
+
+const catGrid=document.getElementById('catGrid');
+['すべて',...allCats].forEach(c=>{
+  const chip=document.createElement('div');
+  chip.className='cat-chip'+(c==='すべて'?' active':'');
+  chip.textContent=c;
+  chip.onclick=()=>{
+    activeCat=c;
+    document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active'));
+    chip.classList.add('active');
+  };
+  catGrid.appendChild(chip);
+});
+
+let lastTopic='';
+document.getElementById('drawBtn').onclick=()=>{
+  let pool=[];
+  if(activeCat==='すべて'){ allCats.forEach(c=>topics[c].forEach(t=>pool.push([c,t]))); }
+  else{ topics[activeCat].forEach(t=>pool.push([activeCat,t])); }
+  let pick;
+  do{ pick=pool[Math.floor(Math.random()*pool.length)]; }while(pool.length>1 && pick[1]===lastTopic);
+  lastTopic=pick[1];
+  document.getElementById('topicCat').textContent=pick[0];
+  document.getElementById('topicText').textContent='「'+pick[1]+'」';
+};
+
+/* ---------- タイマー ---------- */
+let total=15*60, remain=total, tick=null, running=false;
+const disp=document.getElementById('timerDisplay');
+const startBtn=document.getElementById('startBtn');
+const presetRow=document.getElementById('presetRow');
+const presets=[{m:10,l:'10分'},{m:15,l:'15分'},{m:20,l:'20分'},{m:5,l:'5分'}];
+function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function render(){
+  disp.textContent=fmt(remain);
+  disp.className='timer-display'+(remain<=60?' danger':remain<=300?' warn':'');
+}
+presets.forEach((p,i)=>{
+  const b=document.createElement('button');
+  b.textContent=p.l; if(p.m===15)b.classList.add('active');
+  b.onclick=()=>{
+    document.querySelectorAll('.preset button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    stop(); total=p.m*60; remain=total; render();
+  };
+  presetRow.appendChild(b);
+});
+function stop(){ clearInterval(tick); running=false; startBtn.textContent='スタート'; startBtn.className='b-start'; }
+function beep(){
+  try{
+    const a=new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.25,0.5].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=0.18;o.start(a.currentTime+t);o.stop(a.currentTime+t+0.18);});
+  }catch(e){}
+  if(navigator.vibrate)navigator.vibrate([200,100,200]);
+}
+startBtn.onclick=()=>{
+  if(running){ stop(); return; }
+  if(remain<=0){ remain=total; }
+  running=true; startBtn.textContent='一時停止'; startBtn.className='b-pause';
+  tick=setInterval(()=>{
+    remain--; render();
+    if(remain<=0){ stop(); beep(); document.getElementById('timerLabel').textContent='⏰ 終了！'; }
+  },1000);
+};
+document.getElementById('resetBtn').onclick=()=>{ stop(); remain=total; render(); document.getElementById('timerLabel').textContent='議論タイム'; };
+render();
+
+/* ---------- 進行の流れ ---------- */
+const flow=[
+  {t:'2〜3分',h:'① 自己紹介・役割決め',p:'簡単に挨拶し、4役（司会・書記・タイムキーパー・発表者）を決める。立候補ベースでスピーディに。'},
+  {t:'2〜3分',h:'② 前提・ゴールの共有',p:'お題の言葉の定義をそろえ、「何を決めれば終わりか（ゴール）」を全員で確認する。ここのズレが後で響く。'},
+  {t:'3〜4分',h:'③ 論点出し・アイデア出し',p:'否定せずまずは幅広く意見を出す。書記が整理し、論点を可視化する。'},
+  {t:'6〜8分',h:'④ 議論・絞り込み',p:'出た意見を比較・検討し、基準を決めて絞り込む。司会が対立を整理し、合意形成へ導く。'},
+  {t:'2〜3分',h:'⑤ 結論のまとめ',p:'結論と、その理由・選んだ根拠を全員で確認する。書記が要点を整理。'},
+  {t:'1〜2分',h:'⑥ 発表準備',p:'発表者が「結論→理由→プロセス」の構成で話す内容を整える。チームで補足を確認。'},
+];
+const flowList=document.getElementById('flowList');
+flow.forEach((f,i)=>{
+  const last=i===flow.length-1;
+  const row=document.createElement('div');
+  row.className='flow-row';
+  row.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div class="flow-num">${i+1}</div>
+      ${last?'':'<div class="flow-line" style="flex:1;display:flex;justify-content:center;width:30px"><div style="width:2px;background:var(--line);flex:1;margin-top:4px"></div></div>'}
+    </div>
+    <div class="flow-content">
+      <h4>${f.h}</h4>
+      <p>${f.p}</p>
+      <span class="t">⏱ ${f.t}</span>
+    </div>`;
+  flowList.appendChild(row);
+});
+</script>
+</body>
+</html>

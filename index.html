@@ -6,158 +6,150 @@
 <title>グループディスカッション練習アプリ</title>
 <style>
   :root{
-    --bg1:#fff8f4; --bg2:#ffeede; --bg3:#ffe7f0;
-    --card:#ffffff; --card2:#fff4ee;
-    --accent:#ff6a3d; --accent2:#ff4d6d;
-    --grad:linear-gradient(135deg,#ff7a45,#ff4d6d);
-    --text:#2a2630; --sub:#a2929c; --line:#f1e6de;
-    --ok:#16b277; --warn:#f5a524; --danger:#f5455c;
-    --r-mc:#ff6a3d; --r-note:#16b277; --r-time:#f5a524; --r-pres:#ff4d8d;
-    --shadow:0 14px 34px -10px rgba(255,90,70,.28);
-    --shadow-sm:0 6px 18px -8px rgba(150,90,80,.20);
+    --bg:#0e1116; --bg2:#0a0d11;
+    --card:#161a21; --card2:#1c212b;
+    --line:#262c37; --line2:#333a47;
+    --text:#e7e9ee; --sub:#99a0ab; --faint:#69707c;
+    --accent:#c7a667; --accent2:#dcc18a; --accent-soft:rgba(199,166,103,.13);
+    --ok:#8fbf9f; --warn:#d9b15e; --danger:#d98a8a;
+    --serif:"Times New Roman",Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
-    background:linear-gradient(170deg,var(--bg1),var(--bg2) 55%,var(--bg3)); background-attachment:fixed;
-    color:var(--text); line-height:1.7; padding-bottom:92px; -webkit-font-smoothing:antialiased;
-  }
-  header{ text-align:center; padding:26px 16px 10px;}
-  header h1{ font-size:1.34rem; margin:0 0 5px; font-weight:800; letter-spacing:.01em;}
-  header h1 .grad, .grad{ background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}
-  header p{ margin:0; color:var(--sub); font-size:.8rem; font-weight:600;}
-  .wrap{ max-width:640px; margin:0 auto; padding:0 16px;}
+  body{ margin:0; font-family:"Yu Gothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.75; padding-bottom:96px; -webkit-font-smoothing:antialiased; letter-spacing:.02em;}
+  header{ text-align:center; padding:30px 16px 8px;}
+  .kicker{ font-family:var(--serif); letter-spacing:.34em; font-size:.6rem; color:var(--accent); text-transform:uppercase; margin:0 0 9px;}
+  header h1{ font-size:1.16rem; margin:0 0 7px; font-weight:600; letter-spacing:.05em; color:var(--text);}
+  header p{ margin:0; color:var(--sub); font-size:.73rem; letter-spacing:.07em;}
+  .wrap{ max-width:660px; margin:0 auto; padding:0 18px;}
 
   /* タブ */
-  nav.tabs{ position:sticky; top:10px; z-index:50; display:flex; gap:4px; background:rgba(255,255,255,.72);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:6px; border:1px solid rgba(255,255,255,.8);
-    border-radius:18px; max-width:640px; margin:8px auto 0; box-shadow:var(--shadow-sm); overflow-x:auto; scrollbar-width:none;}
+  nav.tabs{ position:sticky; top:0; z-index:50; display:flex; gap:2px; background:rgba(14,17,22,.86);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); padding:8px 6px; border-bottom:1px solid var(--line);
+    max-width:660px; margin:0 auto; overflow-x:auto; scrollbar-width:none;}
   nav.tabs::-webkit-scrollbar{ display:none;}
-  nav.tabs button{ flex:1 0 auto; min-width:50px; border:0; border-radius:13px; padding:10px 8px; font-size:.76rem; font-weight:700;
-    background:transparent; color:var(--sub); cursor:pointer; transition:.25s; letter-spacing:.01em; white-space:nowrap;}
-  nav.tabs button.active{ background:var(--grad); color:#fff; box-shadow:0 8px 18px -6px rgba(255,90,70,.55);}
+  nav.tabs button{ flex:1 0 auto; min-width:56px; border:0; background:transparent; color:var(--sub); cursor:pointer;
+    padding:9px 11px 11px; font-size:.78rem; font-weight:600; letter-spacing:.05em; position:relative; transition:.25s; white-space:nowrap;}
+  nav.tabs button::after{ content:""; position:absolute; left:11px; right:11px; bottom:0; height:1.5px; background:var(--accent); transform:scaleX(0); transition:.25s;}
+  nav.tabs button.active{ color:var(--text);}
+  nav.tabs button.active::after{ transform:scaleX(1);}
 
-  section{ display:none; padding-top:16px; animation:rise .35s cubic-bezier(.2,.8,.2,1);}
+  section{ display:none; padding-top:20px; animation:fade .4s ease;}
   section.active{ display:block;}
-  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
 
-  .card{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; margin-bottom:14px; box-shadow:var(--shadow-sm);}
-  h2.title{ font-size:1.06rem; margin:2px 0 12px; font-weight:800;}
-  .sub{ color:var(--sub); font-size:.85rem;}
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:14px;}
+  h2.title{ font-size:1rem; margin:0 0 14px; font-weight:600; letter-spacing:.04em;}
+  .sub{ color:var(--sub); font-size:.84rem;}
 
-  /* 役割カード */
-  .role{ position:relative; overflow:hidden; padding-left:22px;}
-  .role::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--accent);}
-  .role.mc::before{background:var(--r-mc);} .role.note::before{background:var(--r-note);}
-  .role.time::before{background:var(--r-time);} .role.pres::before{background:var(--r-pres);}
-  .role.st1::before{background:#ff6a3d;} .role.st2::before{background:#16b277;} .role.st3::before{background:#f5a524;}
-  .role.st4::before{background:#3b9eff;} .role.st5::before{background:#ff4d8d;}
-  .role-head{ display:flex; align-items:center; gap:12px; cursor:pointer;}
-  .role-icon{ font-size:1.4rem; width:46px; height:46px; display:flex; align-items:center; justify-content:center; background:var(--card2); border-radius:15px; flex:0 0 auto;}
-  .role-head h3{ margin:0; font-size:1rem; font-weight:800;}
-  .role-head .one{ color:var(--sub); font-size:.78rem; margin-top:2px;}
-  .chev{ margin-left:auto; color:var(--sub); transition:.25s; font-size:1rem;}
+  /* 役割・戦法カード */
+  .role-head{ display:flex; align-items:flex-start; gap:16px; cursor:pointer;}
+  .idx{ font-family:var(--serif); font-size:1.1rem; color:var(--accent); min-width:1.7em; line-height:1.5; flex:0 0 auto; letter-spacing:.04em;}
+  .role-head h3{ margin:0; font-size:.98rem; font-weight:600; letter-spacing:.03em; line-height:1.5;}
+  .role-head .one{ color:var(--sub); font-size:.79rem; margin-top:3px; line-height:1.65;}
+  .chev{ margin-left:auto; color:var(--faint); transition:.25s; font-size:1.3rem; align-self:center; line-height:1;}
   .role.open .chev{ transform:rotate(90deg); color:var(--accent);}
-  .role-body{ display:none; margin-top:14px; border-top:1px solid var(--line); padding-top:14px;}
-  .role.open .role-body{ display:block; animation:rise .3s ease;}
-  .role-body h4{ margin:15px 0 6px; font-size:.8rem; color:var(--accent); letter-spacing:.04em; font-weight:800;}
+  .role-body{ display:none; margin-top:16px; border-top:1px solid var(--line); padding-top:14px; padding-left:calc(1.7em + 16px);}
+  .role.open .role-body{ display:block;}
+  .role-body h4{ margin:17px 0 7px; font-size:.71rem; color:var(--accent); letter-spacing:.14em; font-weight:600; text-transform:uppercase;}
   .role-body h4:first-child{margin-top:0;}
   .role-body ul{ margin:0; padding-left:18px;}
-  .role-body li{ margin-bottom:6px; font-size:.88rem;}
-  .phrase{ background:var(--card2); border-radius:12px; padding:9px 12px; font-size:.85rem; margin:5px 0;}
-  .phrase b{ color:var(--accent);}
+  .role-body li{ margin-bottom:7px; font-size:.86rem; color:#d4d7de;}
+  .phrase{ background:var(--card2); border:1px solid var(--line); border-radius:8px; padding:10px 13px; font-size:.84rem; margin:6px 0;}
+  .phrase b{ color:var(--accent); font-weight:600;}
 
   /* お題 */
-  .topic-display{ text-align:center; padding:30px 18px; background:var(--grad); border-radius:24px; margin-bottom:14px; box-shadow:var(--shadow); color:#fff;}
-  .topic-cat{ display:inline-block; font-size:.72rem; font-weight:800; padding:5px 14px; border-radius:999px; background:rgba(255,255,255,.25); color:#fff; margin-bottom:12px; letter-spacing:.03em;}
-  .topic-text{ font-size:1.2rem; font-weight:800; min-height:2.4em; display:flex; align-items:center; justify-content:center; color:#fff;}
-  .topic-meta{ color:rgba(255,255,255,.88); font-size:.78rem; margin-top:10px;}
-  .btn{ border:0; border-radius:16px; padding:15px; font-size:.95rem; font-weight:800; cursor:pointer; width:100%; transition:.2s;}
-  .btn-main{ background:var(--grad); color:#fff; box-shadow:0 12px 26px -8px rgba(255,90,70,.6);}
-  .btn-main:active{ transform:translateY(1px) scale(.99);}
-  .cat-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
-  .cat-chip{ border:1.5px solid var(--line); background:#fff; color:var(--sub); border-radius:999px; padding:8px 14px; font-size:.78rem; cursor:pointer; font-weight:700; transition:.2s;}
-  .cat-chip.active{ background:var(--grad); color:#fff; border-color:transparent;}
+  .topic-display{ text-align:center; padding:36px 22px; background:var(--card); border:1px solid var(--line); border-radius:16px; margin-bottom:14px;}
+  .topic-cat{ display:inline-block; font-family:var(--serif); font-size:.62rem; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin-bottom:16px;}
+  .topic-text{ font-size:1.15rem; font-weight:600; min-height:2.4em; display:flex; align-items:center; justify-content:center; color:var(--text); line-height:1.7;}
+  .topic-meta{ color:var(--faint); font-size:.73rem; margin-top:14px; letter-spacing:.05em;}
+  .btn{ border:0; border-radius:10px; padding:15px; font-size:.88rem; font-weight:600; letter-spacing:.08em; cursor:pointer; width:100%; transition:.2s;}
+  .btn-main{ background:var(--accent); color:#181206;}
+  .btn-main:hover{ background:var(--accent2);}
+  .btn-main:active{ transform:translateY(1px);}
+  .cat-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .cat-chip{ border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:999px; padding:8px 15px; font-size:.76rem; cursor:pointer; font-weight:500; letter-spacing:.03em; transition:.2s;}
+  .cat-chip.active{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent);}
 
   /* タイマー */
-  .timer-display{ text-align:center; font-size:3.6rem; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:.02em; margin:6px 0 4px;
-    background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;}
-  .timer-display.warn{ background:none; color:var(--warn); -webkit-text-fill-color:var(--warn);}
-  .timer-display.danger{ background:none; color:var(--danger); -webkit-text-fill-color:var(--danger);}
-  .timer-label{ text-align:center; color:var(--sub); font-size:.82rem; margin-bottom:16px; font-weight:600;}
-  .preset{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:14px;}
-  .preset button{ border:1.5px solid var(--line); background:#fff; color:var(--text); border-radius:12px; padding:9px 16px; font-size:.82rem; cursor:pointer; font-weight:700; transition:.2s;}
-  .preset button.active{ background:var(--grad); color:#fff; border-color:transparent;}
+  .timer-display{ text-align:center; font-family:var(--serif); font-size:4rem; font-weight:500; font-variant-numeric:tabular-nums; letter-spacing:.05em; margin:8px 0 6px; color:var(--text);}
+  .timer-display.warn{ color:var(--warn);}
+  .timer-display.danger{ color:var(--danger);}
+  .timer-label{ text-align:center; color:var(--sub); font-size:.77rem; margin-bottom:18px; letter-spacing:.12em;}
+  .preset{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:16px;}
+  .preset button{ border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:8px; padding:9px 18px; font-size:.8rem; cursor:pointer; font-weight:500; letter-spacing:.05em; transition:.2s;}
+  .preset button.active{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent);}
   .timer-ctrl{ display:flex; gap:8px;}
-  .timer-ctrl button{ flex:1; border-radius:14px; padding:14px; font-weight:800; font-size:.9rem; cursor:pointer; border:0; transition:.2s; color:#fff;}
-  .b-start{ background:linear-gradient(135deg,#1fc98a,#16b277);}
-  .b-pause{ background:linear-gradient(135deg,#ffb43d,#f5a524);}
-  .b-reset{ background:var(--card2); color:var(--text); border:1.5px solid var(--line);}
+  .timer-ctrl button{ flex:1; border-radius:10px; padding:14px; font-weight:600; font-size:.85rem; letter-spacing:.07em; cursor:pointer; transition:.2s;}
+  .b-start{ background:var(--accent); color:#181206; border:0;}
+  .b-pause{ background:transparent; color:var(--warn); border:1px solid var(--warn);}
+  .b-reset{ background:transparent; color:var(--sub); border:1px solid var(--line2);}
 
   /* 進行の流れ */
-  .flow-row{ display:flex; gap:14px;}
-  .flow-num{ flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:var(--grad); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:.85rem; box-shadow:0 8px 16px -6px rgba(255,90,70,.6);}
-  .flow-content{ padding-bottom:16px;}
-  .flow-content h4{ margin:5px 0 3px; font-size:.94rem; font-weight:800;}
-  .flow-content p{ margin:0; color:var(--sub); font-size:.83rem;}
-  .flow-content .t{ display:inline-block; background:var(--card2); color:var(--accent); border-radius:8px; padding:2px 10px; font-size:.72rem; font-weight:800; margin-top:6px;}
-  .note-box{ background:linear-gradient(135deg,#fff4ee,#ffeef4); border:1px solid var(--line); border-radius:16px; padding:13px 15px; font-size:.84rem; margin-top:6px;}
-  .note-box b{ color:var(--accent);}
+  .flow-row{ display:flex; gap:18px;}
+  .flow-num{ flex:0 0 auto; font-family:var(--serif); font-size:1.05rem; color:var(--accent); min-width:1.9em; line-height:1.55; letter-spacing:.05em;}
+  .flow-content{ padding-bottom:20px; border-bottom:1px solid var(--line); margin-bottom:2px; flex:1;}
+  .flow-row:last-child .flow-content{ border-bottom:0;}
+  .flow-content h4{ margin:2px 0 5px; font-size:.92rem; font-weight:600; letter-spacing:.03em;}
+  .flow-content p{ margin:0; color:var(--sub); font-size:.83rem; line-height:1.7;}
+  .flow-content .t{ display:inline-block; border:1px solid var(--line2); color:var(--accent); border-radius:6px; padding:2px 11px; font-size:.69rem; font-weight:500; letter-spacing:.1em; margin-top:9px;}
+  .note-box{ background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:15px 17px; font-size:.82rem; color:var(--sub); margin-top:8px; line-height:1.8;}
+  .note-box b{ color:var(--accent); font-weight:600;}
 
   /* 模擬GD */
-  .sim-setup label{ display:block; font-size:.8rem; color:var(--sub); margin:14px 0 6px; font-weight:700;}
-  .sim-setup select,.sim-setup input{ width:100%; padding:12px 13px; border-radius:13px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:.92rem; font-family:inherit; transition:.2s;}
-  .sim-setup select:focus,.sim-setup input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,106,61,.16);}
-  .seg{ display:flex; gap:7px; flex-wrap:wrap;}
-  .seg button{ flex:1 1 70px; border:1.5px solid var(--line); background:#fff; color:var(--text); border-radius:13px; padding:10px 4px; font-size:.8rem; font-weight:700; cursor:pointer; transition:.2s;}
-  .seg button.active{ background:var(--grad); color:#fff; border-color:transparent; box-shadow:0 8px 16px -6px rgba(255,90,70,.5);}
-  .keyrow{ display:flex; gap:7px;}
+  .sim-setup label{ display:block; font-size:.74rem; color:var(--sub); margin:16px 0 8px; letter-spacing:.06em; font-weight:500;}
+  .sim-setup select,.sim-setup input{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line2); background:var(--bg2); color:var(--text); font-size:.9rem; font-family:inherit; transition:.2s;}
+  .sim-setup select:focus,.sim-setup input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft);}
+  .seg{ display:flex; gap:8px; flex-wrap:wrap;}
+  .seg button{ flex:1 1 70px; border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:10px; padding:11px 4px; font-size:.8rem; font-weight:500; letter-spacing:.03em; cursor:pointer; transition:.2s;}
+  .seg button.active{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent);}
+  .keyrow{ display:flex; gap:8px;}
   .keyrow input{ flex:1;}
-  .keyrow button{ flex:0 0 auto; border:1.5px solid var(--line); background:#fff; color:var(--text); border-radius:13px; padding:0 14px; font-size:.8rem; cursor:pointer; font-weight:700;}
-  .mini{ font-size:.74rem; color:var(--sub); margin-top:10px; line-height:1.7;}
-  .mini a{ color:var(--accent); font-weight:700;}
-  .sim-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px;}
-  .sim-head .topicline{ flex:1; font-size:.86rem; font-weight:800; line-height:1.45;}
-  .sim-timer{ flex:0 0 auto; font-variant-numeric:tabular-nums; font-weight:800; font-size:1.05rem; color:#fff; background:var(--grad); padding:6px 13px; border-radius:12px; box-shadow:0 8px 16px -7px rgba(255,90,70,.6);}
-  .sim-timer.warn{ background:linear-gradient(135deg,#ffb43d,#f5a524);}
-  .sim-timer.danger{ background:linear-gradient(135deg,#ff6a6a,#f5455c);}
-  .chat{ display:flex; flex-direction:column; gap:11px; min-height:180px; max-height:50vh; overflow-y:auto; padding:6px 2px; margin-bottom:12px;}
-  .msg{ max-width:88%; padding:11px 14px; border-radius:18px; font-size:.88rem; line-height:1.6; white-space:pre-wrap; word-break:break-word; box-shadow:var(--shadow-sm); animation:pop .25s ease;}
-  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
-  .msg .who{ font-size:.72rem; font-weight:800; margin-bottom:4px; opacity:.95;}
-  .msg.them{ align-self:flex-start; background:#fff; border:1px solid var(--line); border-bottom-left-radius:6px;}
-  .msg.me{ align-self:flex-end; background:var(--grad); color:#fff; border-bottom-right-radius:6px; box-shadow:0 10px 20px -8px rgba(255,90,70,.55);}
-  .msg.sys{ align-self:center; background:var(--card2); border:1px solid var(--line); color:var(--sub); font-size:.78rem; text-align:center; max-width:100%; box-shadow:none;}
-  .msg.hint{ align-self:flex-start; background:linear-gradient(135deg,#fff6e8,#ffefe0); border:1px solid #ffe0b8; color:var(--text); border-bottom-left-radius:6px;}
-  .msg.hint .who{ color:var(--warn);}
-  .msg.r-mc .who{ color:var(--r-mc);} .msg.r-note .who{ color:var(--r-note);}
-  .msg.r-time .who{ color:var(--r-time);} .msg.r-pres .who{ color:var(--r-pres);}
-  .typing{ align-self:flex-start; color:var(--sub); font-size:.82rem; padding:4px 12px;}
-  .chat-input{ display:flex; gap:7px;}
-  .chat-input textarea{ flex:1; resize:none; padding:11px 13px; border-radius:14px; border:1.5px solid var(--line); background:#fff; color:var(--text); font-size:.9rem; font-family:inherit; transition:.2s;}
-  .chat-input textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,106,61,.16);}
-  .chat-input button{ flex:0 0 auto; border:0; border-radius:14px; padding:0 18px; font-weight:800; background:var(--grad); color:#fff; cursor:pointer; box-shadow:0 8px 16px -6px rgba(255,90,70,.5);}
-  .mic-btn{ flex:0 0 auto; border:1.5px solid var(--line); background:#fff; color:var(--text); border-radius:14px; padding:0 14px; font-size:1.15rem; cursor:pointer; transition:.2s;}
-  .mic-btn.rec{ background:linear-gradient(135deg,#ff6a6a,#f5455c); color:#fff; border-color:transparent; animation:pulse 1s infinite;}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
-  .sim-actions{ display:flex; gap:7px; margin-top:10px;}
-  .sim-actions button{ flex:1; border:1.5px solid var(--line); background:#fff; color:var(--text); border-radius:13px; padding:10px 2px; font-size:.78rem; font-weight:700; cursor:pointer; transition:.2s;}
-  #simEnd{ border-color:transparent; background:linear-gradient(135deg,#1fc98a,#16b277); color:#fff;}
-  .fb-score{ display:flex; align-items:center; gap:10px; margin:8px 0;}
-  .fb-score .lbl{ font-size:.8rem; width:6.5em; flex:0 0 auto; font-weight:700;}
-  .fb-score .bar{ flex:1; height:10px; background:var(--card2); border-radius:99px; overflow:hidden;}
-  .fb-score .bar span{ display:block; height:100%; background:var(--grad); border-radius:99px;}
-  .fb-score .num{ font-size:.82rem; width:2.6em; text-align:right; color:var(--accent); font-weight:800; flex:0 0 auto;}
-  .radar{ text-align:center; margin:4px 0 14px;}
-  .radar svg{ width:100%; max-width:320px; height:auto;}
-  footer{ text-align:center; color:var(--sub); font-size:.72rem; padding:14px 0 4px;}
+  .keyrow button{ flex:0 0 auto; border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:10px; padding:0 15px; font-size:.78rem; cursor:pointer;}
+  .mini{ font-size:.74rem; color:var(--faint); margin-top:11px; line-height:1.85;}
+  .mini a{ color:var(--accent);}
+  .sim-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .sim-head .topicline{ flex:1; font-size:.85rem; font-weight:600; line-height:1.5; color:var(--text);}
+  .sim-timer{ flex:0 0 auto; font-family:var(--serif); font-variant-numeric:tabular-nums; font-weight:500; font-size:1.12rem; color:var(--accent); border:1px solid var(--line2); padding:5px 14px; border-radius:8px;}
+  .sim-timer.warn{ color:var(--warn); border-color:var(--warn);}
+  .sim-timer.danger{ color:var(--danger); border-color:var(--danger);}
+  .chat{ display:flex; flex-direction:column; gap:12px; min-height:180px; max-height:50vh; overflow-y:auto; padding:6px 2px; margin-bottom:12px;}
+  .msg{ max-width:88%; padding:11px 15px; border-radius:12px; font-size:.87rem; line-height:1.65; white-space:pre-wrap; word-break:break-word;}
+  .msg .who{ font-size:.67rem; font-weight:600; margin-bottom:5px; letter-spacing:.07em; color:var(--accent); text-transform:uppercase;}
+  .msg.them{ align-self:flex-start; background:var(--card2); border:1px solid var(--line);}
+  .msg.me{ align-self:flex-end; background:var(--accent); color:#181206;}
+  .msg.me .who{ color:#181206; opacity:.65;}
+  .msg.sys{ align-self:center; background:transparent; border:1px dashed var(--line2); color:var(--faint); font-size:.76rem; text-align:center; max-width:100%;}
+  .msg.hint{ align-self:flex-start; background:var(--accent-soft); border:1px solid var(--accent); color:#e3dcc9;}
+  .msg.hint .who{ color:var(--accent);}
+  .typing{ align-self:flex-start; color:var(--faint); font-size:.8rem; padding:4px 12px;}
+  .chat-input{ display:flex; gap:8px;}
+  .chat-input textarea{ flex:1; resize:none; padding:11px 14px; border-radius:10px; border:1px solid var(--line2); background:var(--bg2); color:var(--text); font-size:.9rem; font-family:inherit; transition:.2s;}
+  .chat-input textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft);}
+  .chat-input button{ flex:0 0 auto; border:0; border-radius:10px; padding:0 18px; font-weight:600; letter-spacing:.05em; background:var(--accent); color:#181206; cursor:pointer;}
+  .chat-input .mic-btn{ flex:0 0 auto; border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:10px; padding:0 14px; cursor:pointer; display:flex; align-items:center; transition:.2s;}
+  .chat-input .mic-btn svg{ width:18px; height:18px; display:block;}
+  .chat-input .mic-btn.rec{ border-color:var(--danger); color:var(--danger); animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .sim-actions{ display:flex; gap:8px; margin-top:12px;}
+  .sim-actions button{ flex:1; border:1px solid var(--line2); background:transparent; color:var(--sub); border-radius:9px; padding:11px 2px; font-size:.77rem; font-weight:500; letter-spacing:.03em; cursor:pointer; transition:.2s;}
+  #simEnd{ border-color:var(--accent); color:var(--accent);}
+  .fb-score{ display:flex; align-items:center; gap:12px; margin:10px 0;}
+  .fb-score .lbl{ font-size:.8rem; width:6.5em; flex:0 0 auto; color:var(--sub); letter-spacing:.04em;}
+  .fb-score .bar{ flex:1; height:6px; background:var(--bg2); border:1px solid var(--line); border-radius:99px; overflow:hidden;}
+  .fb-score .bar span{ display:block; height:100%; background:var(--accent);}
+  .fb-score .num{ font-family:var(--serif); font-size:.84rem; width:2.8em; text-align:right; color:var(--accent); flex:0 0 auto;}
+  .radar{ text-align:center; margin:6px 0 16px;}
+  .radar svg{ width:100%; max-width:300px; height:auto;}
+  footer{ text-align:center; color:var(--faint); font-size:.7rem; padding:20px 0 4px; letter-spacing:.07em;}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🗣️ <span class="grad">グループディスカッション練習アプリ</span></h1>
-  <p>4名1グループ／司会・書記・タイムキーパー・発表者</p>
+  <p class="kicker">Interview Training</p>
+  <h1>グループディスカッション 実戦トレーニング</h1>
+  <p>4名1グループ ｜ 司会・書記・タイムキーパー・発表者</p>
 </header>
 
 <nav class="tabs wrap">
@@ -175,7 +167,7 @@
   <section id="sim" class="active">
     <div id="simSetup">
       <div class="card sim-setup">
-        <h2 class="title">🤖 模擬グループディスカッション</h2>
+        <h2 class="title">模擬グループディスカッション</h2>
         <p class="sub" style="margin:-4px 0 6px">AIがあなた以外の3役を演じます。自分の役で発言し、本番さながらに練習できます。</p>
         <label>あなたの役</label>
         <div class="seg" id="simRole"></div>
@@ -196,7 +188,7 @@
         <input id="simModel" value="gemini-2.0-flash" autocomplete="off">
         <p class="mini">無料キーは <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> で発行できます（Googleアカウントでログイン →「Create API key」）。キーは公開ファイルには含まれず、あなたの端末内にのみ保存されます。うまく動かない時はモデル名を <b>gemini-2.5-flash</b> や <b>gemini-1.5-flash</b> に変えてみてください。</p>
       </div>
-      <button class="btn btn-main" id="simStart">▶ 模擬GDを始める</button>
+      <button class="btn btn-main" id="simStart">模擬GDを始める</button>
     </div>
 
     <div id="simChat" style="display:none">
@@ -207,8 +199,8 @@
       <div class="card" style="padding:10px">
         <div class="chat" id="chatBox"></div>
         <div class="chat-input">
-          <textarea id="chatText" rows="2" placeholder="あなたの発言を入力（🎤で音声入力）…"></textarea>
-          <button id="micBtn" class="mic-btn" title="音声入力">🎤</button>
+          <textarea id="chatText" rows="2" placeholder="あなたの発言を入力（マイクで音声入力可）…"></textarea>
+          <button id="micBtn" class="mic-btn" title="音声入力" aria-label="音声入力"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><line x1="12" y1="18" x2="12" y2="21"></line><line x1="9" y1="21" x2="15" y2="21"></line></svg></button>
           <button id="chatSend">送信</button>
         </div>
         <div class="sim-actions">
@@ -226,14 +218,14 @@
   <section id="roles">
     <p class="sub" style="margin:0 0 14px">タップで各役割の詳しい立ち回り方・評価ポイントが開きます。まず自分の担当役を読み込み、他役の動きも把握しておくと連携できます。</p>
     <div id="roleList"></div>
-    <div class="note-box">💡 <b>共通の心得</b>：結論を出すこと自体より「チームで協力して議論を前に進められたか」が見られています。発言量が多ければ良いわけではなく、論点を整理する・人の意見を引き出す・時間内にまとめる、といった貢献が評価されます。</div>
+    <div class="note-box"><b>共通の心得</b>：結論を出すこと自体より「チームで協力して議論を前に進められたか」が見られています。発言量が多ければ良いわけではなく、論点を整理する・人の意見を引き出す・時間内にまとめる、といった貢献が評価されます。</div>
   </section>
 
   <!-- ===== 戦法 ===== -->
   <section id="senpo">
     <p class="sub" style="margin:0 0 14px">全員がリーダーになる必要はありません。自分に合う「型」を持ち、当日のメンバーを見て、今チームに欠けている役割へ柔軟にシフトできる人が最も高く評価されます。タップで各戦法の動き方が開きます。</p>
     <div id="stratList"></div>
-    <div class="note-box">💡 <b>戦法の選び方</b>：誰が主導権を握りそうか、場を乱す人はいないかを見極め、「今チームに足りない動き」に回るのがコツ。複数の型を持っておくと当日対応できます。</div>
+    <div class="note-box"><b>戦法の選び方</b>：誰が主導権を握りそうか、場を乱す人はいないかを見極め、「今チームに足りない動き」に回るのがコツ。複数の型を持っておくと当日対応できます。</div>
   </section>
 
   <!-- ===== お題 ===== -->
@@ -243,7 +235,7 @@
       <div class="topic-text" id="topicText">「お題を出す」を押してください</div>
       <div class="topic-meta" id="topicMeta">想定：制限時間 15〜20分</div>
     </div>
-    <button class="btn btn-main" id="drawBtn">🎲 お題を出す</button>
+    <button class="btn btn-main" id="drawBtn">お題を出す</button>
     <div class="card" style="margin-top:14px">
       <h2 class="title" style="font-size:.92rem">カテゴリで絞る</h2>
       <div class="cat-grid" id="catGrid"></div>
@@ -261,14 +253,14 @@
         <button class="b-reset" id="resetBtn">リセット</button>
       </div>
     </div>
-    <div class="note-box">⏱️ タイムキーパー役の練習に。残り5分で黄色、残り1分で赤に変わり、終了時に音とバイブで知らせます（端末により対応が異なります）。</div>
+    <div class="note-box">タイムキーパー役の練習に。残り5分で黄色、残り1分で赤に変わり、終了時に音とバイブで知らせます（端末により対応が異なります）。</div>
   </section>
 
   <!-- ===== 進行の流れ ===== -->
   <section id="flow">
     <p class="sub" style="margin:0 0 14px">15〜20分のディスカッションを想定した標準的な進め方です。司会はこの流れを意識して時間を配分します。</p>
     <div class="card" id="flowList"></div>
-    <div class="note-box">📝 <b>時間配分の目安（20分の場合）</b>：前提共有3分 → 論点出し4分 → 議論8分 → まとめ3分 → 発表準備2分。最初に司会が全体の時間設計を宣言すると進行がスムーズです。</div>
+    <div class="note-box"><b>時間配分の目安（20分の場合）</b>：前提共有3分 → 論点出し4分 → 議論8分 → まとめ3分 → 発表準備2分。最初に司会が全体の時間設計を宣言すると進行がスムーズです。</div>
   </section>
 
 </div>
@@ -289,25 +281,25 @@ document.querySelectorAll('nav.tabs button').forEach(b=>{
 
 /* ---------- 役割データ ---------- */
 const roles=[
-  {cls:'mc',icon:'🎯',name:'司会（ファシリテーター）',one:'議論を設計し、全員を巻き込んで前に進める',
+  {cls:'mc',name:'司会（ファシリテーター）',one:'議論を設計し、全員を巻き込んで前に進める',
    role:['議論の進め方・時間配分を最初に提案し、合意をとる','論点を整理し、話が逸れたら軌道修正する','発言の少ない人に話を振り、全員参加の場をつくる'],
    tips:['冒頭で「進め方の枠組み」を示すと一気にリードできる（例：前提確認→アイデア出し→絞り込み→まとめ）','自分の意見を押し通す人ではなく、意見を引き出し束ねる人だと意識する','「今◯◯の論点ですね」と現在地を言語化すると全員が迷わない','反対意見も「なるほど、その視点だと…」と一度受け止めてから整理する'],
    ng:['仕切ることに必死で自分が喋りすぎる','時間管理をタイムキーパー任せにして進行が間延びする','意見が割れたとき強引に多数決で打ち切る'],
    eval:['場の生産性を高められたか','対立を建設的にまとめられたか','全員の力を引き出せたか'],
    phrases:['<b>枠組み提示：</b>「まず前提をそろえて、次にアイデアを出し、最後に絞り込む流れでどうでしょう？」','<b>意見を振る：</b>「◯◯さんはこの点どう思われますか？」','<b>軌道修正：</b>「いったん本来の論点に戻すと…」']},
-  {cls:'note',icon:'✍️',name:'書記',one:'意見を可視化し、議論の土台をつくる',
+  {cls:'note',name:'書記',one:'意見を可視化し、議論の土台をつくる',
    role:['出た意見・キーワードをその場で整理して記録する','話の流れや決まったことを構造化して見せる','まとめ局面で論点を一覧化し、結論づくりを助ける'],
    tips:['ただ書くだけでなく「今出た意見はAとBですね」と要約して返すと一気に貢献度が上がる','意見をグルーピング・対比して見せると議論が前進する','記録に集中しすぎて発言ゼロにならないよう、要約のタイミングで発言する','「これは記録しておきますね」と一言添えると存在感が出る'],
    ng:['黙々と書くだけで議論に関与しない','全部を逐語で書こうとして追いつかなくなる','自分の解釈で意見を歪めて記録する'],
    eval:['議論を整理・構造化できたか','記録を使って議論を前進させたか','発言と記録を両立できたか'],
    phrases:['<b>要約：</b>「今のところ意見はこの3つに整理できそうです」','<b>論点整理：</b>「賛成派は◯◯、慎重派は△△、という対立ですね」','<b>まとめ補助：</b>「決まったことを確認すると…」']},
-  {cls:'time',icon:'⏱️',name:'タイムキーパー',one:'時間を管理し、時間内に着地させる',
+  {cls:'time',name:'タイムキーパー',one:'時間を管理し、時間内に着地させる',
    role:['全体の時間配分を司会と一緒に設計する','残り時間を適切なタイミングで知らせる','時間切れにならないよう、まとめへの移行を促す'],
    tips:['ただ時間を読み上げるだけでなく「残り5分なのでそろそろまとめに入りましょう」と提案までする','各フェーズの残り時間も意識し、議論が長引いたら声をかける','時間に追われすぎず、議論の質とのバランスを見る','最初に司会と時間設計を共有しておくと動きやすい'],
    ng:['時計を見るだけで何も提案しない','終了間際に突然「あと1分です」と焦らせる','時間厳守にこだわりすぎて議論を急かし台無しにする'],
    eval:['時間内に議論を着地させられたか','単なる計測でなく進行に貢献したか','全体を俯瞰できていたか'],
    phrases:['<b>設計：</b>「議論に10分、まとめに5分でいきましょう」','<b>中間報告：</b>「半分の時間が過ぎました。論点出しは一区切りにしますか？」','<b>収束促し：</b>「残り3分です。結論をまとめましょう」']},
-  {cls:'pres',icon:'📢',name:'発表者（プレゼンター）',one:'議論の成果を分かりやすく伝える',
+  {cls:'pres',name:'発表者（プレゼンター）',one:'議論の成果を分かりやすく伝える',
    role:['チームの結論と、その理由・プロセスを説明する','議論で出た重要な論点や工夫を盛り込む','質問に対してチームを代表して応答する'],
    tips:['結論→理由→補足の順（PREP）で話すと伝わりやすい','「なぜその結論に至ったか」の議論プロセスも触れると深みが出る','発表役でも議論には積極参加する（議論を理解していないと発表できない）','書記のまとめと連携し、要点を取りこぼさない'],
    ng:['議論に参加せず最後だけ出てくる','結論だけ言って理由やプロセスを説明しない','時間を超過してダラダラ話す'],
@@ -321,19 +313,19 @@ roles.forEach((r,i)=>{
   el.className='card role '+r.cls;
   el.innerHTML=`
     <div class="role-head">
-      <div class="role-icon">${r.icon}</div>
+      <div class="idx">${('0'+(i+1)).slice(-2)}</div>
       <div>
         <h3>${r.name}</h3>
         <div class="one">${r.one}</div>
       </div>
-      <div class="chev">▶</div>
+      <div class="chev">›</div>
     </div>
     <div class="role-body">
-      <h4>■ 役割・やること</h4><ul>${r.role.map(x=>`<li>${x}</li>`).join('')}</ul>
-      <h4>■ 高評価につながるコツ</h4><ul>${r.tips.map(x=>`<li>${x}</li>`).join('')}</ul>
-      <h4>■ ありがちなNG</h4><ul>${r.ng.map(x=>`<li>${x}</li>`).join('')}</ul>
-      <h4>■ 使えるフレーズ例</h4>${r.phrases.map(x=>`<div class="phrase">${x}</div>`).join('')}
-      <h4>■ 見られている評価ポイント</h4><ul>${r.eval.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>役割・やること</h4><ul>${r.role.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>高評価につながるコツ</h4><ul>${r.tips.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>ありがちなNG</h4><ul>${r.ng.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <h4>使えるフレーズ例</h4>${r.phrases.map(x=>`<div class="phrase">${x}</div>`).join('')}
+      <h4>見られている評価ポイント</h4><ul>${r.eval.map(x=>`<li>${x}</li>`).join('')}</ul>
     </div>`;
   el.querySelector('.role-head').onclick=()=>el.classList.toggle('open');
   roleList.appendChild(el);
@@ -341,33 +333,33 @@ roles.forEach((r,i)=>{
 
 /* ---------- 戦法データ ---------- */
 const strats=[
- {cls:'st1',icon:'🎭',name:'「裏回し」戦法',one:'一歩引いた役（書記・タイムキーパー）から議論を実質コントロール',
+ {cls:'st1',name:'「裏回し」戦法',one:'一歩引いた役（書記・タイムキーパー）から議論を実質コントロール',
   sec:[['狙い',['目立つリーダーはハイリスク。前に出ずに、論理的な整理と進行で評価される']],
    ['具体的な動き',['書記で議論支配：単にメモを取るだけでなく「つまり、こういうことですよね？」と要約・可視化し、議論の方向性を握る','タイムキーパーで強制進行：「残り〇分なのでアイデア出しは切って、まとめに入りましょう」と時間を理由にフェーズを切り替える']],
    ['使いどころ',['すでに主導権を握る人がいる／リーダー争いを避けたいとき','自分が書記・タイムキーパー役のとき']]]},
- {cls:'st2',icon:'🤝',name:'バランサー・対立解消戦法',one:'停滞・対立・クラッシャー発生時にチームを救い、協調性と問題解決力を示す',
+ {cls:'st2',name:'バランサー・対立解消戦法',one:'停滞・対立・クラッシャー発生時にチームを救い、協調性と問題解決力を示す',
   sec:[['狙い',['場が割れたり止まったりした時に、チームを前へ進める“救い手”として評価される']],
    ['具体的な動き',['対立を第3の案で昇華：A案とB案で割れたら折衷案を出す、または共通の目的に立ち返って新しいC案を提案し、合意形成へ導く','クラッシャーを活かす：独演説を「なるほど、そういう視点ですね」と一度受け止め、「まだ発言していない〇〇さんはどう思いますか？」とパスを回して整理する']],
    ['使いどころ',['意見が二分した／議論が停滞したとき','一人で喋り続ける人や、場を乱す人がいるとき']]]},
- {cls:'st3',icon:'🧭',name:'フレームワーク駆使戦法',one:'3C・SWOT・ロジックツリーなどの“型”で議論を論理的に構造化する',
+ {cls:'st3',name:'フレームワーク駆使戦法',one:'3C・SWOT・ロジックツリーなどの“型”で議論を論理的に構造化する',
   sec:[['狙い',['アイデアの量で勝負せず、整理力・構造化力で貢献する']],
    ['具体的な動き',['脱線・混乱したタイミングで「一度、3C（市場・競合・自社）で論点を整理しませんか？」と提案する','ロジックツリーで論点を分解し、抜け漏れを防ぐ']],
    ['注意',['「とりあえずSWOTで」と無理に型へ当てはめると“目的を見失っている”と減点される。あくまで議論を整理する羅針盤として使う']],
    ['使いどころ',['議論が発散して収拾がつかないとき']]]},
- {cls:'st4',icon:'🔍',name:'良問・検証（深掘り）戦法',one:'鋭い質問で議論の解像度を上げ、自分が案を出さなくても深化に貢献する',
+ {cls:'st4',name:'良問・検証（深掘り）戦法',one:'鋭い質問で議論の解像度を上げ、自分が案を出さなくても深化に貢献する',
   sec:[['狙い',['ゼロから発案するのが苦手でも、問いの力で議論を前進させる']],
    ['具体的な動き',['漠然とした案に「具体的にどの層をターゲットにしますか？」「その効果はどう測定できますか？」と、検証可能で具体的な問いを投げる','前提や根拠を確認し、議論の精度を上げる']],
    ['使いどころ',['アイデアが抽象的で深まらないとき','自分から案を出すのが苦手なとき']]]},
- {cls:'st5',icon:'🐟',name:'コバンザメ戦法',one:'優秀な人の意見に自分の視点を少し足して（1を1.1にして）返す',
+ {cls:'st5',name:'コバンザメ戦法',one:'優秀な人の意見に自分の視点を少し足して（1を1.1にして）返す',
   sec:[['狙い',['無理に主導せず、確実に加点を積み上げる']],
    ['具体的な動き',['「賛成です。特に〇〇の観点（実現可能性やコストなど）から見て良いと思います」と、一言の視点を添えて返す']],
    ['使いどころ',['自信がないとき／議論についていくのが精一杯なとき']]]},
 ];
 const stratList=document.getElementById('stratList');
-strats.forEach(s=>{
+strats.forEach((s,i)=>{
   const el=document.createElement('div'); el.className='card role '+s.cls;
-  let body=''; s.sec.forEach(p=>{ body+='<h4>■ '+p[0]+'</h4><ul>'+p[1].map(x=>'<li>'+x+'</li>').join('')+'</ul>'; });
-  el.innerHTML='<div class="role-head"><div class="role-icon">'+s.icon+'</div><div><h3>'+s.name+'</h3><div class="one">'+s.one+'</div></div><div class="chev">▶</div></div><div class="role-body">'+body+'</div>';
+  let body=''; s.sec.forEach(p=>{ body+='<h4>'+p[0]+'</h4><ul>'+p[1].map(x=>'<li>'+x+'</li>').join('')+'</ul>'; });
+  el.innerHTML='<div class="role-head"><div class="idx">'+('0'+(i+1)).slice(-2)+'</div><div><h3>'+s.name+'</h3><div class="one">'+s.one+'</div></div><div class="chev">›</div></div><div class="role-body">'+body+'</div>';
   el.querySelector('.role-head').onclick=()=>el.classList.toggle('open');
   stratList.appendChild(el);
 });
@@ -504,28 +496,18 @@ render();
 
 /* ---------- 進行の流れ ---------- */
 const flow=[
-  {t:'2〜3分',h:'① 自己紹介・役割決め',p:'簡単に挨拶し、4役（司会・書記・タイムキーパー・発表者）を決める。立候補ベースでスピーディに。'},
-  {t:'2〜3分',h:'② 前提・ゴールの共有',p:'お題の言葉の定義をそろえ、「何を決めれば終わりか（ゴール）」を全員で確認する。ここのズレが後で響く。'},
-  {t:'3〜4分',h:'③ 論点出し・アイデア出し',p:'否定せずまずは幅広く意見を出す。書記が整理し、論点を可視化する。'},
-  {t:'6〜8分',h:'④ 議論・絞り込み',p:'出た意見を比較・検討し、基準を決めて絞り込む。司会が対立を整理し、合意形成へ導く。'},
-  {t:'2〜3分',h:'⑤ 結論のまとめ',p:'結論と、その理由・選んだ根拠を全員で確認する。書記が要点を整理。'},
-  {t:'1〜2分',h:'⑥ 発表準備',p:'発表者が「結論→理由→プロセス」の構成で話す内容を整える。チームで補足を確認。'},
+  {t:'2〜3分',h:'自己紹介・役割決め',p:'簡単に挨拶し、4役（司会・書記・タイムキーパー・発表者）を決める。立候補ベースでスピーディに。'},
+  {t:'2〜3分',h:'前提・ゴールの共有',p:'お題の言葉の定義をそろえ、「何を決めれば終わりか（ゴール）」を全員で確認する。ここのズレが後で響く。'},
+  {t:'3〜4分',h:'論点出し・アイデア出し',p:'否定せずまずは幅広く意見を出す。書記が整理し、論点を可視化する。'},
+  {t:'6〜8分',h:'議論・絞り込み',p:'出た意見を比較・検討し、基準を決めて絞り込む。司会が対立を整理し、合意形成へ導く。'},
+  {t:'2〜3分',h:'結論のまとめ',p:'結論と、その理由・選んだ根拠を全員で確認する。書記が要点を整理。'},
+  {t:'1〜2分',h:'発表準備',p:'発表者が「結論→理由→プロセス」の構成で話す内容を整える。チームで補足を確認。'},
 ];
 const flowList=document.getElementById('flowList');
 flow.forEach((f,i)=>{
-  const last=i===flow.length-1;
   const row=document.createElement('div');
   row.className='flow-row';
-  row.innerHTML=`
-    <div style="display:flex;flex-direction:column;align-items:center">
-      <div class="flow-num">${i+1}</div>
-      ${last?'':'<div class="flow-line" style="flex:1;display:flex;justify-content:center;width:30px"><div style="width:2px;background:var(--line);flex:1;margin-top:4px"></div></div>'}
-    </div>
-    <div class="flow-content">
-      <h4>${f.h}</h4>
-      <p>${f.p}</p>
-      <span class="t">⏱ ${f.t}</span>
-    </div>`;
+  row.innerHTML='<div class="flow-num">'+('0'+(i+1)).slice(-2)+'</div><div class="flow-content"><h4>'+f.h+'</h4><p>'+f.p+'</p><span class="t">'+f.t+'</span></div>';
   flowList.appendChild(row);
 });
 
@@ -549,7 +531,7 @@ const simTimeBox=document.getElementById('simTime');
   simTimeBox.appendChild(b);
 });
 const simTopicSel=document.getElementById('simTopic');
-{ const o=document.createElement('option'); o.value='__random__'; o.textContent='🎲 ランダムに選ぶ'; simTopicSel.appendChild(o);
+{ const o=document.createElement('option'); o.value='__random__'; o.textContent='ランダムに選ぶ'; simTopicSel.appendChild(o);
   allCats.forEach(cat=>{ const g=document.createElement('optgroup'); g.label=cat; topics[cat].forEach(t=>{ const op=document.createElement('option'); op.value=t; op.textContent=t; g.appendChild(op); }); simTopicSel.appendChild(g); }); }
 
 /* --- キー保存（localStorage：この端末のみ） --- */
@@ -616,7 +598,7 @@ async function aiTurn(){
     let arr; try{ arr=parseJSON(txt); }catch(e){ arr=null; }
     if(arr===null){ addMsg('メンバー','',txt||'（応答を取得できませんでした）','them'); }
     else { if(!Array.isArray(arr)) arr=[arr]; arr.forEach(m=>{ if(m&&m.text) addMsg(m.name||'メンバー', m.role||'', m.text, 'them'); }); }
-  }catch(e){ addSys('⚠️ '+e.message); }
+  }catch(e){ addSys(''+e.message); }
   finally{ showTyping(false); sim.generating=false; scheduleIdle(); }
 }
 
@@ -647,7 +629,7 @@ document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; 
 const IDLE_MS=30000, MAX_HINTS=3;
 function clearIdle(){ if(sim.idle){ clearTimeout(sim.idle); sim.idle=null; } }
 function scheduleIdle(){ clearIdle(); if(sim.ended||sim.generating||sim.hints>=MAX_HINTS) return; sim.idle=setTimeout(giveHint, IDLE_MS); }
-function addHint(text){ const d=document.createElement('div'); d.className='msg hint'; d.innerHTML='<div class="who">💡 コーチからのヒント</div>'; d.appendChild(document.createTextNode(text)); chatBox.appendChild(d); scrollChat(); }
+function addHint(text){ const d=document.createElement('div'); d.className='msg hint'; d.innerHTML='<div class="who">コーチからのヒント</div>'; d.appendChild(document.createTextNode(text)); chatBox.appendChild(d); scrollChat(); }
 async function giveHint(){
   clearIdle();
   if(sim.ended||sim.generating) return;
@@ -665,7 +647,7 @@ async function giveHint(){
 const simTimerEl=document.getElementById('simTimer');
 function fmt2(s){ const m=Math.floor(s/60),x=s%60; return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'); }
 function renderSimTimer(){ simTimerEl.textContent=fmt2(Math.max(0,sim.remain)); simTimerEl.className='sim-timer'+(sim.remain<=60?' danger':sim.remain<=300?' warn':''); }
-function startSimTimer(){ stopSimTimer(); sim.remain=sim.minutes*60; renderSimTimer(); let warned=false; sim.timer=setInterval(()=>{ sim.remain--; renderSimTimer(); if(sim.remain===300&&!warned){ warned=true; addSys('⏱ 残り5分です。そろそろ論点を絞り、まとめへ向かいましょう。'); } if(sim.remain<=0){ stopSimTimer(); addSys('⏰ 時間終了です。「終了して講評」を押すとAIが講評します。'); } },1000); }
+function startSimTimer(){ stopSimTimer(); sim.remain=sim.minutes*60; renderSimTimer(); let warned=false; sim.timer=setInterval(()=>{ sim.remain--; renderSimTimer(); if(sim.remain===300&&!warned){ warned=true; addSys('残り5分です。そろそろ論点を絞り、まとめへ向かいましょう。'); } if(sim.remain<=0){ stopSimTimer(); addSys('時間終了です。「終了して講評」を押すとAIが講評します。'); } },1000); }
 function stopSimTimer(){ if(sim.timer){ clearInterval(sim.timer); sim.timer=null; } }
 
 /* --- 講評 --- */
@@ -684,16 +666,16 @@ function radarSVG(vals,labels){
   for(let i=0;i<N;i++){ const a=pt(i,R*vals[i]/5); poly+=(i?' L':'M')+a[0].toFixed(1)+' '+a[1].toFixed(1); dots+='<circle cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="3.2" fill="var(--accent)"/>'; }
   let lab='';
   for(let i=0;i<N;i++){ const a=pt(i,R+16); const c=Math.cos(ang(i)); const anch=Math.abs(c)<0.3?'middle':(c>0?'start':'end'); lab+='<text x="'+a[0].toFixed(1)+'" y="'+(a[1]+4).toFixed(1)+'" fill="var(--sub)" font-size="11" text-anchor="'+anch+'">'+labels[i]+' '+vals[i]+'</text>'; }
-  return '<svg viewBox="0 0 300 216" xmlns="http://www.w3.org/2000/svg">'+grid+axes+'<path d="'+poly+' Z" fill="rgba(255,106,61,.22)" stroke="var(--accent)" stroke-width="2"/>'+dots+lab+'</svg>';
+  return '<svg viewBox="0 0 300 216" xmlns="http://www.w3.org/2000/svg">'+grid+axes+'<path d="'+poly+' Z" fill="rgba(199,166,103,.18)" stroke="var(--accent)" stroke-width="2"/>'+dots+lab+'</svg>';
 }
 async function runFeedback(){
   const fb=document.getElementById('simFeedback');
   document.getElementById('simChat').style.display='none';
   fb.style.display='block';
-  fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><p class="sub">採点しています…</p></div>';
+  fb.innerHTML='<div class="card"><h2 class="title">AI講評</h2><p class="sub">採点しています…</p></div>';
   try{
     const txt=await callGemini(fbSystem(), '【GD記録】\n'+transcriptText());
-    let d; try{ d=parseJSON(txt); }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><div class="msg them" style="max-width:100%">'+(txt||'取得失敗')+'</div></div>'+backBtn(); bindBack(); return; }
+    let d; try{ d=parseJSON(txt); }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">AI講評</h2><div class="msg them" style="max-width:100%">'+(txt||'取得失敗')+'</div></div>'+backBtn(); bindBack(); return; }
     const labels={'貢献度':'貢献度','論理性':'論理性','協調性':'協調性','役割遂行':'役割遂行'};
     let bars=''; const sc=d.scores||{};
     const order=['貢献度','論理性','協調性','役割遂行'];
@@ -701,12 +683,12 @@ async function runFeedback(){
     Object.keys(labels).forEach(k=>{ const v=Math.max(0,Math.min(5,Number(sc[k])||0)); bars+='<div class="fb-score"><div class="lbl">'+labels[k]+'</div><div class="bar"><span style="width:'+(v/5*100)+'%"></span></div><div class="num">'+v+'/5</div></div>'; });
     const radar='<div class="radar">'+radarSVG(vals,order)+'</div>';
     const list=a=>(Array.isArray(a)?a:[]).map(x=>'<li>'+String(x)+'</li>').join('');
-    fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評（'+sim.userRole+'役）</h2>'+radar+bars+
+    fb.innerHTML='<div class="card"><h2 class="title">AI講評（'+sim.userRole+'役）</h2>'+radar+bars+
       '<h4 style="color:var(--ok);margin:14px 0 4px">◎ 良かった点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.good)+'</ul>'+
       '<h4 style="color:var(--warn);margin:14px 0 4px">△ 改善点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.improve)+'</ul>'+
       '<h4 style="color:var(--accent);margin:14px 0 4px">総評</h4><p style="font-size:.88rem;margin:0">'+(d.summary||'')+'</p></div>'+backBtn();
     bindBack();
-  }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><div class="msg sys" style="max-width:100%">⚠️ '+e.message+'</div></div>'+backBtn(); bindBack(); }
+  }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">AI講評</h2><div class="msg sys" style="max-width:100%">⚠️ '+e.message+'</div></div>'+backBtn(); bindBack(); }
 }
 function backBtn(){ return '<button class="btn btn-main" id="fbBack" style="margin-top:4px">もう一度練習する</button>'; }
 function bindBack(){ const b=document.getElementById('fbBack'); if(b)b.onclick=()=>{ document.getElementById('simFeedback').style.display='none'; document.getElementById('simSetup').style.display='block'; }; }

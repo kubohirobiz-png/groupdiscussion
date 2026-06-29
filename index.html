@@ -101,6 +101,41 @@
   .flow-content .t{ display:inline-block; background:var(--card2); color:var(--accent); border-radius:6px; padding:1px 8px; font-size:.72rem; font-weight:700; margin-top:5px;}
   .note-box{ background:rgba(56,189,248,.08); border:1px solid rgba(56,189,248,.3); border-radius:12px; padding:12px 14px; font-size:.84rem; margin-top:6px;}
   .note-box b{ color:var(--accent);}
+  /* 模擬GD */
+  .sim-setup label{ display:block; font-size:.82rem; color:var(--sub); margin:12px 0 5px;}
+  .sim-setup select,.sim-setup input{ width:100%; padding:11px; border-radius:10px; border:1px solid var(--line); background:var(--card2); color:var(--text); font-size:.9rem; font-family:inherit;}
+  .seg{ display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{ flex:1 1 70px; border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:9px 4px; font-size:.8rem; font-weight:600; cursor:pointer;}
+  .seg button.active{ background:var(--accent); color:#0b1120; border-color:var(--accent);}
+  .keyrow{ display:flex; gap:6px;}
+  .keyrow input{ flex:1;}
+  .keyrow button{ flex:0 0 auto; border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:0 12px; font-size:.8rem; cursor:pointer;}
+  .mini{ font-size:.74rem; color:var(--sub); margin-top:8px; line-height:1.6;}
+  .mini a{ color:var(--accent);}
+  .sim-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .sim-head .topicline{ flex:1; font-size:.85rem; font-weight:700; line-height:1.4;}
+  .sim-timer{ flex:0 0 auto; font-variant-numeric:tabular-nums; font-weight:800; font-size:1.05rem; background:var(--card2); padding:5px 11px; border-radius:9px;}
+  .sim-timer.warn{ color:var(--warn);} .sim-timer.danger{ color:var(--danger);}
+  .chat{ display:flex; flex-direction:column; gap:10px; min-height:180px; max-height:50vh; overflow-y:auto; padding:4px 2px; margin-bottom:10px;}
+  .msg{ max-width:88%; padding:9px 12px; border-radius:14px; font-size:.88rem; line-height:1.6; white-space:pre-wrap; word-break:break-word;}
+  .msg .who{ font-size:.72rem; font-weight:700; margin-bottom:3px; opacity:.9;}
+  .msg.them{ align-self:flex-start; background:var(--card2); border:1px solid var(--line); border-bottom-left-radius:4px;}
+  .msg.me{ align-self:flex-end; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0b1120; border-bottom-right-radius:4px;}
+  .msg.sys{ align-self:center; background:rgba(56,189,248,.08); border:1px solid rgba(56,189,248,.25); color:var(--sub); font-size:.78rem; text-align:center; max-width:100%;}
+  .msg.r-mc .who{ color:var(--r-mc);} .msg.r-note .who{ color:var(--r-note);}
+  .msg.r-time .who{ color:var(--r-time);} .msg.r-pres .who{ color:var(--r-pres);}
+  .typing{ align-self:flex-start; color:var(--sub); font-size:.82rem; padding:4px 10px;}
+  .chat-input{ display:flex; gap:6px;}
+  .chat-input textarea{ flex:1; resize:none; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--card2); color:var(--text); font-size:.9rem; font-family:inherit;}
+  .chat-input button{ flex:0 0 auto; border:0; border-radius:10px; padding:0 16px; font-weight:700; background:var(--accent); color:#0b1120; cursor:pointer;}
+  .sim-actions{ display:flex; gap:6px; margin-top:8px;}
+  .sim-actions button{ flex:1; border:1px solid var(--line); background:var(--card2); color:var(--text); border-radius:10px; padding:9px 2px; font-size:.78rem; font-weight:600; cursor:pointer;}
+  #simEnd{ border-color:var(--ok); color:var(--ok);}
+  .fb-score{ display:flex; align-items:center; gap:10px; margin:7px 0;}
+  .fb-score .lbl{ font-size:.8rem; width:6.5em; flex:0 0 auto;}
+  .fb-score .bar{ flex:1; height:9px; background:var(--card2); border-radius:99px; overflow:hidden;}
+  .fb-score .bar span{ display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .fb-score .num{ font-size:.82rem; width:2.6em; text-align:right; color:var(--accent); font-weight:700; flex:0 0 auto;}
   footer{ text-align:center; color:var(--sub); font-size:.72rem; padding:10px 0 4px;}
 </style>
 </head>
@@ -112,16 +147,67 @@
 </header>
 
 <nav class="tabs wrap">
-  <button data-tab="roles" class="active">役割とコツ</button>
+  <button data-tab="sim" class="active">模擬GD</button>
+  <button data-tab="roles">役割とコツ</button>
   <button data-tab="topics">お題</button>
   <button data-tab="timer">タイマー</button>
-  <button data-tab="flow">進行の流れ</button>
+  <button data-tab="flow">進行</button>
 </nav>
 
 <div class="wrap">
 
+  <!-- ===== 模擬GD ===== -->
+  <section id="sim" class="active">
+    <div id="simSetup">
+      <div class="card sim-setup">
+        <h2 class="title">🤖 模擬グループディスカッション</h2>
+        <p class="sub" style="margin:-4px 0 6px">AIがあなた以外の3役を演じます。自分の役で発言し、本番さながらに練習できます。</p>
+        <label>あなたの役</label>
+        <div class="seg" id="simRole"></div>
+        <label>お題</label>
+        <select id="simTopic"></select>
+        <input id="simTopicCustom" placeholder="自由入力（入力するとこちらが優先）" style="margin-top:6px">
+        <label>制限時間</label>
+        <div class="seg" id="simTime"></div>
+      </div>
+      <div class="card sim-setup">
+        <h2 class="title" style="font-size:.95rem">AI設定（Google Gemini）</h2>
+        <label>APIキー（この端末のブラウザにのみ保存）</label>
+        <div class="keyrow">
+          <input id="simKey" type="password" placeholder="AIza... で始まるキー" autocomplete="off">
+          <button type="button" id="simKeyToggle">表示</button>
+        </div>
+        <label style="margin-top:10px">モデル</label>
+        <input id="simModel" value="gemini-2.0-flash" autocomplete="off">
+        <p class="mini">無料キーは <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> で発行できます（Googleアカウントでログイン →「Create API key」）。キーは公開ファイルには含まれず、あなたの端末内にのみ保存されます。うまく動かない時はモデル名を <b>gemini-2.5-flash</b> や <b>gemini-1.5-flash</b> に変えてみてください。</p>
+      </div>
+      <button class="btn btn-main" id="simStart">▶ 模擬GDを始める</button>
+    </div>
+
+    <div id="simChat" style="display:none">
+      <div class="sim-head">
+        <div class="topicline" id="simTopicShow"></div>
+        <div class="sim-timer" id="simTimer">--:--</div>
+      </div>
+      <div class="card" style="padding:10px">
+        <div class="chat" id="chatBox"></div>
+        <div class="chat-input">
+          <textarea id="chatText" rows="2" placeholder="あなたの発言を入力…"></textarea>
+          <button id="chatSend">送信</button>
+        </div>
+        <div class="sim-actions">
+          <button id="simAdvance">AIに進めてもらう</button>
+          <button id="simEnd">終了して講評</button>
+          <button id="simQuit">中止</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="simFeedback" style="display:none"></div>
+  </section>
+
   <!-- ===== 役割 ===== -->
-  <section id="roles" class="active">
+  <section id="roles">
     <p class="sub" style="margin:0 0 14px">タップで各役割の詳しい立ち回り方・評価ポイントが開きます。まず自分の担当役を読み込み、他役の動きも把握しておくと連携できます。</p>
     <div id="roleList"></div>
     <div class="note-box">💡 <b>共通の心得</b>：結論を出すこと自体より「チームで協力して議論を前に進められたか」が見られています。発言量が多ければ良いわけではなく、論点を整理する・人の意見を引き出す・時間内にまとめる、といった貢献が評価されます。</div>
@@ -386,6 +472,138 @@ flow.forEach((f,i)=>{
     </div>`;
   flowList.appendChild(row);
 });
+
+/* ================= 模擬GD（AI会話） ================= */
+const roleClass={'司会':'r-mc','書記':'r-note','タイムキーパー':'r-time','発表者':'r-pres'};
+const allRoles=['司会','書記','タイムキーパー','発表者'];
+const memberNames=['佐藤','鈴木','高橋','田中'];
+const sim={ userRole:'司会', topic:'', minutes:15, key:'', model:'gemini-2.0-flash', members:[], log:[], timer:null, remain:0, ended:false };
+
+/* --- 設定UI --- */
+const simRoleBox=document.getElementById('simRole');
+allRoles.forEach((r,i)=>{
+  const b=document.createElement('button'); b.textContent=r; if(i===0)b.classList.add('active');
+  b.onclick=()=>{ sim.userRole=r; simRoleBox.querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); };
+  simRoleBox.appendChild(b);
+});
+const simTimeBox=document.getElementById('simTime');
+[10,15,20].forEach((m,i)=>{
+  const b=document.createElement('button'); b.textContent=m+'分'; if(m===15)b.classList.add('active');
+  b.onclick=()=>{ sim.minutes=m; simTimeBox.querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); };
+  simTimeBox.appendChild(b);
+});
+const simTopicSel=document.getElementById('simTopic');
+{ const o=document.createElement('option'); o.value='__random__'; o.textContent='🎲 ランダムに選ぶ'; simTopicSel.appendChild(o);
+  allCats.forEach(cat=>{ const g=document.createElement('optgroup'); g.label=cat; topics[cat].forEach(t=>{ const op=document.createElement('option'); op.value=t; op.textContent=t; g.appendChild(op); }); simTopicSel.appendChild(g); }); }
+
+/* --- キー保存（localStorage：この端末のみ） --- */
+const keyInput=document.getElementById('simKey'), modelInput=document.getElementById('simModel');
+try{ const sk=localStorage.getItem('gd_gemini_key'); if(sk)keyInput.value=sk; const sm=localStorage.getItem('gd_gemini_model'); if(sm)modelInput.value=sm; }catch(e){}
+document.getElementById('simKeyToggle').onclick=()=>{ keyInput.type=keyInput.type==='password'?'text':'password'; };
+
+/* --- 開始 --- */
+document.getElementById('simStart').onclick=()=>{
+  const key=keyInput.value.trim();
+  if(!key){ alert('Gemini APIキーを入力してください。無料キーは Google AI Studio で発行できます。'); return; }
+  sim.key=key; sim.model=modelInput.value.trim()||'gemini-2.0-flash';
+  try{ localStorage.setItem('gd_gemini_key',sim.key); localStorage.setItem('gd_gemini_model',sim.model); }catch(e){}
+  const custom=document.getElementById('simTopicCustom').value.trim();
+  let topic=custom;
+  if(!topic){ let v=simTopicSel.value; if(v==='__random__'){ const flat=[]; allCats.forEach(c=>topics[c].forEach(t=>flat.push(t))); v=flat[Math.floor(Math.random()*flat.length)]; } topic=v; }
+  sim.topic=topic; sim.log=[]; sim.ended=false;
+  const others=allRoles.filter(r=>r!==sim.userRole);
+  sim.members=others.map((r,i)=>({name:memberNames[i]+'さん', role:r}));
+  document.getElementById('simTopicShow').textContent='お題：'+topic+'（あなた＝'+sim.userRole+'役）';
+  document.getElementById('simSetup').style.display='none';
+  document.getElementById('simFeedback').style.display='none';
+  document.getElementById('simChat').style.display='block';
+  document.getElementById('chatBox').innerHTML='';
+  startSimTimer();
+  addSys('お題「'+topic+'」について、4名で'+sim.minutes+'分のグループディスカッションを始めます。あなたは'+sim.userRole+'役です。');
+  if(sim.userRole==='司会'){ addSys('あなたは司会です。まず進め方の提案から議論を始めましょう（下に入力）。'); }
+  else { aiTurn(); }
+};
+
+/* --- メッセージ描画 --- */
+const chatBox=document.getElementById('chatBox');
+function scrollChat(){ chatBox.scrollTop=chatBox.scrollHeight; }
+function addMsg(name,role,text,cls){
+  sim.log.push({name,role,text,isUser:cls==='me'});
+  const d=document.createElement('div'); d.className='msg '+cls+(role?(' '+(roleClass[role]||'')):'');
+  if(cls!=='me'){ d.innerHTML='<div class="who">'+name+(role?'（'+role+'役）':'')+'</div>'; }
+  d.appendChild(document.createTextNode(text)); chatBox.appendChild(d); scrollChat();
+}
+function addSys(text){ const d=document.createElement('div'); d.className='msg sys'; d.textContent=text; chatBox.appendChild(d); scrollChat(); }
+let typingEl=null;
+function showTyping(on){ if(on){ if(typingEl)return; typingEl=document.createElement('div'); typingEl.className='typing'; typingEl.textContent='メンバーが考えています…'; chatBox.appendChild(typingEl); scrollChat(); } else if(typingEl){ typingEl.remove(); typingEl=null; } }
+
+/* --- Gemini呼び出し --- */
+async function callGemini(system,user){
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(sim.model)+':generateContent?key='+encodeURIComponent(sim.key);
+  const body={ systemInstruction:{parts:[{text:system}]}, contents:[{role:'user',parts:[{text:user}]}], generationConfig:{temperature:0.9, maxOutputTokens:1200, responseMimeType:'application/json'} };
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok){ let t=''; try{t=await res.text();}catch(e){} throw new Error('APIエラー('+res.status+')：キーやモデル名をご確認ください。'+(t?' '+t.slice(0,160):'')); }
+  const data=await res.json();
+  return (data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts||[]).map(p=>p.text||'').join('');
+}
+function parseJSON(txt){ let s=(txt||'').trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim(); return JSON.parse(s); }
+function transcriptText(){ if(!sim.log.length) return '（まだ発言はありません。あなたが議論の口火を切ります。）'; return sim.log.map(m=>(m.isUser?'【あなた】':'')+m.name+'（'+m.role+'役）：'+m.text).join('\n'); }
+function simSystem(){
+  const ml=sim.members.map(m=>'・'+m.name+'（'+m.role+'役）').join('\n');
+  return 'あなたは新卒採用のグループディスカッション(GD)練習シミュレーターです。\nお題：「'+sim.topic+'」／制限時間：'+sim.minutes+'分／4名グループ。\nユーザーは「'+sim.userRole+'」役です。あなたは残り3名の就活生を演じます：\n'+ml+'\n各メンバーは自分の役割と個性に応じて、実際の就活生らしい自然な敬語で発言します。建設的に議論を進めつつ、時に意見が分かれたり別の視点を出したりします。1人の発言は2〜4文程度。ユーザーの直前の発言があればそれに反応し、議論を前へ進めます。同じ内容の繰り返しは避けてください。\n出力は必ずJSON配列のみ。各要素は {"name":"氏名","role":"役割","text":"発言"}。1回の応答でメンバー1〜2名分を返します。JSON以外の文字は一切出力しないこと。';
+}
+async function aiTurn(){
+  showTyping(true);
+  try{
+    const txt=await callGemini(simSystem(), transcriptText()+'\n\n上記を踏まえ、次に発言するメンバー1〜2名分の発言をJSON配列で返してください。');
+    showTyping(false);
+    let arr; try{ arr=parseJSON(txt); }catch(e){ addMsg('メンバー','',txt||'（応答を取得できませんでした）','them'); return; }
+    if(!Array.isArray(arr)) arr=[arr];
+    arr.forEach(m=>{ if(m&&m.text) addMsg(m.name||'メンバー', m.role||'', m.text, 'them'); });
+  }catch(e){ showTyping(false); addSys('⚠️ '+e.message); }
+}
+
+/* --- 送信・操作 --- */
+const chatText=document.getElementById('chatText');
+function sendUser(){ const t=chatText.value.trim(); if(!t)return; addMsg('あなた', sim.userRole, t, 'me'); chatText.value=''; aiTurn(); }
+document.getElementById('chatSend').onclick=sendUser;
+chatText.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendUser(); } });
+document.getElementById('simAdvance').onclick=aiTurn;
+document.getElementById('simQuit').onclick=()=>{ if(confirm('模擬GDを中止して設定に戻りますか？')){ stopSimTimer(); document.getElementById('simChat').style.display='none'; document.getElementById('simSetup').style.display='block'; } };
+document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; stopSimTimer(); runFeedback(); } };
+
+/* --- タイマー --- */
+const simTimerEl=document.getElementById('simTimer');
+function fmt2(s){ const m=Math.floor(s/60),x=s%60; return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'); }
+function renderSimTimer(){ simTimerEl.textContent=fmt2(Math.max(0,sim.remain)); simTimerEl.className='sim-timer'+(sim.remain<=60?' danger':sim.remain<=300?' warn':''); }
+function startSimTimer(){ stopSimTimer(); sim.remain=sim.minutes*60; renderSimTimer(); let warned=false; sim.timer=setInterval(()=>{ sim.remain--; renderSimTimer(); if(sim.remain===300&&!warned){ warned=true; addSys('⏱ 残り5分です。そろそろ論点を絞り、まとめへ向かいましょう。'); } if(sim.remain<=0){ stopSimTimer(); addSys('⏰ 時間終了です。「終了して講評」を押すとAIが講評します。'); } },1000); }
+function stopSimTimer(){ if(sim.timer){ clearInterval(sim.timer); sim.timer=null; } }
+
+/* --- 講評 --- */
+function fbSystem(){
+  return 'あなたは新卒採用GDの面接官です。以下のGD記録を読み、ユーザー（'+sim.userRole+'役）の発言のみを評価します。お題：「'+sim.topic+'」。\n出力は必ず次のJSONのみ：\n{"scores":{"貢献度":0,"論理性":0,"協調性":0,"役割遂行":0},"good":["..."],"improve":["..."],"summary":"総評(2〜4文)"}\n各スコアは1〜5の整数。具体的で実践的に、励ましつつ改善点も明確に。JSON以外は一切出力しないこと。';
+}
+async function runFeedback(){
+  const fb=document.getElementById('simFeedback');
+  document.getElementById('simChat').style.display='none';
+  fb.style.display='block';
+  fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><p class="sub">採点しています…</p></div>';
+  try{
+    const txt=await callGemini(fbSystem(), '【GD記録】\n'+transcriptText());
+    let d; try{ d=parseJSON(txt); }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><div class="msg them" style="max-width:100%">'+(txt||'取得失敗')+'</div></div>'+backBtn(); bindBack(); return; }
+    const labels={'貢献度':'貢献度','論理性':'論理性','協調性':'協調性','役割遂行':'役割遂行'};
+    let bars=''; const sc=d.scores||{};
+    Object.keys(labels).forEach(k=>{ const v=Math.max(0,Math.min(5,Number(sc[k])||0)); bars+='<div class="fb-score"><div class="lbl">'+labels[k]+'</div><div class="bar"><span style="width:'+(v/5*100)+'%"></span></div><div class="num">'+v+'/5</div></div>'; });
+    const list=a=>(Array.isArray(a)?a:[]).map(x=>'<li>'+String(x)+'</li>').join('');
+    fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評（'+sim.userRole+'役）</h2>'+bars+
+      '<h4 style="color:var(--ok);margin:14px 0 4px">◎ 良かった点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.good)+'</ul>'+
+      '<h4 style="color:var(--warn);margin:14px 0 4px">△ 改善点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.improve)+'</ul>'+
+      '<h4 style="color:var(--accent);margin:14px 0 4px">総評</h4><p style="font-size:.88rem;margin:0">'+(d.summary||'')+'</p></div>'+backBtn();
+    bindBack();
+  }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><div class="msg sys" style="max-width:100%">⚠️ '+e.message+'</div></div>'+backBtn(); bindBack(); }
+}
+function backBtn(){ return '<button class="btn btn-main" id="fbBack" style="margin-top:4px">もう一度練習する</button>'; }
+function bindBack(){ const b=document.getElementById('fbBack'); if(b)b.onclick=()=>{ document.getElementById('simFeedback').style.display='none'; document.getElementById('simSetup').style.display='block'; }; }
 </script>
 </body>
 </html>

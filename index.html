@@ -141,6 +141,8 @@
   .fb-score .bar{ flex:1; height:9px; background:var(--card2); border-radius:99px; overflow:hidden;}
   .fb-score .bar span{ display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2));}
   .fb-score .num{ font-size:.82rem; width:2.6em; text-align:right; color:var(--accent); font-weight:700; flex:0 0 auto;}
+  .radar{ text-align:center; margin:4px 0 12px;}
+  .radar svg{ width:100%; max-width:320px; height:auto;}
   footer{ text-align:center; color:var(--sub); font-size:.72rem; padding:10px 0 4px;}
 </style>
 </head>
@@ -622,6 +624,20 @@ function stopSimTimer(){ if(sim.timer){ clearInterval(sim.timer); sim.timer=null
 function fbSystem(){
   return 'あなたは新卒採用GDの面接官です。以下のGD記録を読み、ユーザー（'+sim.userRole+'役）の発言のみを評価します。お題：「'+sim.topic+'」。\n出力は必ず次のJSONのみ：\n{"scores":{"貢献度":0,"論理性":0,"協調性":0,"役割遂行":0},"good":["..."],"improve":["..."],"summary":"総評(2〜4文)"}\n各スコアは1〜5の整数。具体的で実践的に、励ましつつ改善点も明確に。JSON以外は一切出力しないこと。';
 }
+function radarSVG(vals,labels){
+  const cx=150,cy=104,R=70,N=4;
+  const ang=i=>(-90+i*360/N)*Math.PI/180;
+  const pt=(i,r)=>[cx+r*Math.cos(ang(i)), cy+r*Math.sin(ang(i))];
+  let grid='';
+  for(let L=1;L<=5;L++){ const r=R*L/5; let p=''; for(let i=0;i<N;i++){ const a=pt(i,r); p+=(i?' L':'M')+a[0].toFixed(1)+' '+a[1].toFixed(1); } grid+='<path d="'+p+' Z" fill="none" stroke="var(--line)" stroke-width="1"/>'; }
+  let axes='';
+  for(let i=0;i<N;i++){ const a=pt(i,R); axes+='<line x1="'+cx+'" y1="'+cy+'" x2="'+a[0].toFixed(1)+'" y2="'+a[1].toFixed(1)+'" stroke="var(--line)" stroke-width="1"/>'; }
+  let poly='', dots='';
+  for(let i=0;i<N;i++){ const a=pt(i,R*vals[i]/5); poly+=(i?' L':'M')+a[0].toFixed(1)+' '+a[1].toFixed(1); dots+='<circle cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="3.2" fill="var(--accent)"/>'; }
+  let lab='';
+  for(let i=0;i<N;i++){ const a=pt(i,R+16); const c=Math.cos(ang(i)); const anch=Math.abs(c)<0.3?'middle':(c>0?'start':'end'); lab+='<text x="'+a[0].toFixed(1)+'" y="'+(a[1]+4).toFixed(1)+'" fill="var(--sub)" font-size="11" text-anchor="'+anch+'">'+labels[i]+' '+vals[i]+'</text>'; }
+  return '<svg viewBox="0 0 300 216" xmlns="http://www.w3.org/2000/svg">'+grid+axes+'<path d="'+poly+' Z" fill="rgba(56,189,248,.25)" stroke="var(--accent)" stroke-width="2"/>'+dots+lab+'</svg>';
+}
 async function runFeedback(){
   const fb=document.getElementById('simFeedback');
   document.getElementById('simChat').style.display='none';
@@ -632,9 +648,12 @@ async function runFeedback(){
     let d; try{ d=parseJSON(txt); }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評</h2><div class="msg them" style="max-width:100%">'+(txt||'取得失敗')+'</div></div>'+backBtn(); bindBack(); return; }
     const labels={'貢献度':'貢献度','論理性':'論理性','協調性':'協調性','役割遂行':'役割遂行'};
     let bars=''; const sc=d.scores||{};
+    const order=['貢献度','論理性','協調性','役割遂行'];
+    const vals=order.map(k=>Math.max(0,Math.min(5,Number(sc[k])||0)));
     Object.keys(labels).forEach(k=>{ const v=Math.max(0,Math.min(5,Number(sc[k])||0)); bars+='<div class="fb-score"><div class="lbl">'+labels[k]+'</div><div class="bar"><span style="width:'+(v/5*100)+'%"></span></div><div class="num">'+v+'/5</div></div>'; });
+    const radar='<div class="radar">'+radarSVG(vals,order)+'</div>';
     const list=a=>(Array.isArray(a)?a:[]).map(x=>'<li>'+String(x)+'</li>').join('');
-    fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評（'+sim.userRole+'役）</h2>'+bars+
+    fb.innerHTML='<div class="card"><h2 class="title">📋 AI講評（'+sim.userRole+'役）</h2>'+radar+bars+
       '<h4 style="color:var(--ok);margin:14px 0 4px">◎ 良かった点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.good)+'</ul>'+
       '<h4 style="color:var(--warn);margin:14px 0 4px">△ 改善点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.improve)+'</ul>'+
       '<h4 style="color:var(--accent);margin:14px 0 4px">総評</h4><p style="font-size:.88rem;margin:0">'+(d.summary||'')+'</p></div>'+backBtn();

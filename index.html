@@ -125,6 +125,8 @@
   .msg.r-mc .who{ color:var(--r-mc);} .msg.r-note .who{ color:var(--r-note);}
   .msg.r-time .who{ color:var(--r-time);} .msg.r-pres .who{ color:var(--r-pres);}
   .typing{ align-self:flex-start; color:var(--sub); font-size:.82rem; padding:4px 10px;}
+  .msg.hint{ align-self:flex-start; background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.4); color:var(--text); border-bottom-left-radius:4px;}
+  .msg.hint .who{ color:var(--warn);}
   .chat-input{ display:flex; gap:6px;}
   .chat-input textarea{ flex:1; resize:none; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--card2); color:var(--text); font-size:.9rem; font-family:inherit;}
   .chat-input button{ flex:0 0 auto; border:0; border-radius:10px; padding:0 16px; font-weight:700; background:var(--accent); color:#0b1120; cursor:pointer;}
@@ -481,7 +483,7 @@ flow.forEach((f,i)=>{
 const roleClass={'司会':'r-mc','書記':'r-note','タイムキーパー':'r-time','発表者':'r-pres'};
 const allRoles=['司会','書記','タイムキーパー','発表者'];
 const memberNames=['佐藤','鈴木','高橋','田中'];
-const sim={ userRole:'司会', topic:'', minutes:15, key:'', model:'gemini-2.0-flash', members:[], log:[], timer:null, remain:0, ended:false };
+const sim={ userRole:'司会', topic:'', minutes:15, key:'', model:'gemini-2.0-flash', members:[], log:[], timer:null, remain:0, ended:false, generating:false, idle:null, hints:0 };
 
 /* --- 設定UI --- */
 const simRoleBox=document.getElementById('simRole');
@@ -523,8 +525,9 @@ document.getElementById('simStart').onclick=()=>{
   document.getElementById('simChat').style.display='block';
   document.getElementById('chatBox').innerHTML='';
   startSimTimer();
+  sim.hints=0;
   addSys('お題「'+topic+'」について、4名で'+sim.minutes+'分のグループディスカッションを始めます。あなたは'+sim.userRole+'役です。');
-  if(sim.userRole==='司会'){ addSys('あなたは司会です。まず進め方の提案から議論を始めましょう（下に入力）。'); }
+  if(sim.userRole==='司会'){ addSys('あなたは司会です。まず進め方の提案から議論を始めましょう（下に入力）。'); scheduleIdle(); }
   else { aiTurn(); }
 };
 
@@ -557,21 +560,22 @@ function simSystem(){
   return 'あなたは新卒採用のグループディスカッション(GD)練習シミュレーターです。\nお題：「'+sim.topic+'」／制限時間：'+sim.minutes+'分／4名グループ。\nユーザーは「'+sim.userRole+'」役です。あなたは残り3名の就活生を演じます：\n'+ml+'\n各メンバーは自分の役割と個性に応じて、実際の就活生らしい自然な敬語で発言します。建設的に議論を進めつつ、時に意見が分かれたり別の視点を出したりします。1人の発言は2〜4文程度。ユーザーの直前の発言があればそれに反応し、議論を前へ進めます。同じ内容の繰り返しは避けてください。\n出力は必ずJSON配列のみ。各要素は {"name":"氏名","role":"役割","text":"発言"}。1回の応答でメンバー1〜2名分を返します。JSON以外の文字は一切出力しないこと。';
 }
 async function aiTurn(){
-  showTyping(true);
+  clearIdle(); sim.generating=true; showTyping(true);
   try{
     const txt=await callGemini(simSystem(), transcriptText()+'\n\n上記を踏まえ、次に発言するメンバー1〜2名分の発言をJSON配列で返してください。');
-    showTyping(false);
-    let arr; try{ arr=parseJSON(txt); }catch(e){ addMsg('メンバー','',txt||'（応答を取得できませんでした）','them'); return; }
-    if(!Array.isArray(arr)) arr=[arr];
-    arr.forEach(m=>{ if(m&&m.text) addMsg(m.name||'メンバー', m.role||'', m.text, 'them'); });
-  }catch(e){ showTyping(false); addSys('⚠️ '+e.message); }
+    let arr; try{ arr=parseJSON(txt); }catch(e){ arr=null; }
+    if(arr===null){ addMsg('メンバー','',txt||'（応答を取得できませんでした）','them'); }
+    else { if(!Array.isArray(arr)) arr=[arr]; arr.forEach(m=>{ if(m&&m.text) addMsg(m.name||'メンバー', m.role||'', m.text, 'them'); }); }
+  }catch(e){ addSys('⚠️ '+e.message); }
+  finally{ showTyping(false); sim.generating=false; scheduleIdle(); }
 }
 
 /* --- 送信・操作 --- */
 const chatText=document.getElementById('chatText');
-function sendUser(){ const t=chatText.value.trim(); if(!t)return; addMsg('あなた', sim.userRole, t, 'me'); chatText.value=''; aiTurn(); }
+function sendUser(){ const t=chatText.value.trim(); if(!t)return; clearIdle(); sim.hints=0; addMsg('あなた', sim.userRole, t, 'me'); chatText.value=''; aiTurn(); }
 document.getElementById('chatSend').onclick=sendUser;
 chatText.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendUser(); } });
+chatText.addEventListener('input',()=>{ if(!sim.generating) scheduleIdle(); });
 
 /* --- 音声入力（Web Speech API） --- */
 const micBtn=document.getElementById('micBtn');
@@ -581,13 +585,31 @@ if(!SR){ micBtn.style.display='none'; }
 else{
   recog=new SR(); recog.lang='ja-JP'; recog.interimResults=true; recog.continuous=true;
   recog.onresult=e=>{ let fin='',itm=''; for(let i=e.resultIndex;i<e.results.length;i++){ const tr=e.results[i][0].transcript; if(e.results[i].isFinal)fin+=tr; else itm+=tr; } if(fin)baseText=baseText+fin; chatText.value=baseText+itm; };
-  recog.onend=()=>{ recing=false; micBtn.classList.remove('rec'); chatText.value=baseText; };
+  recog.onend=()=>{ recing=false; micBtn.classList.remove('rec'); chatText.value=baseText; if(!sim.generating) scheduleIdle(); };
   recog.onerror=ev=>{ recing=false; micBtn.classList.remove('rec'); if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){ alert('マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。'); } };
-  micBtn.onclick=()=>{ if(recing){ recog.stop(); return; } baseText=chatText.value?chatText.value+' ':''; try{ recog.start(); recing=true; micBtn.classList.add('rec'); chatText.focus(); }catch(e){} };
+  micBtn.onclick=()=>{ clearIdle(); if(recing){ recog.stop(); return; } baseText=chatText.value?chatText.value+' ':''; try{ recog.start(); recing=true; micBtn.classList.add('rec'); chatText.focus(); }catch(e){} };
 }
 document.getElementById('simAdvance').onclick=aiTurn;
-document.getElementById('simQuit').onclick=()=>{ if(confirm('模擬GDを中止して設定に戻りますか？')){ stopSimTimer(); document.getElementById('simChat').style.display='none'; document.getElementById('simSetup').style.display='block'; } };
-document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; stopSimTimer(); runFeedback(); } };
+document.getElementById('simQuit').onclick=()=>{ if(confirm('模擬GDを中止して設定に戻りますか？')){ clearIdle(); stopSimTimer(); document.getElementById('simChat').style.display='none'; document.getElementById('simSetup').style.display='block'; } };
+document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; clearIdle(); stopSimTimer(); runFeedback(); } };
+
+/* --- 無操作時のヒント（AIコーチ） --- */
+const IDLE_MS=30000, MAX_HINTS=3;
+function clearIdle(){ if(sim.idle){ clearTimeout(sim.idle); sim.idle=null; } }
+function scheduleIdle(){ clearIdle(); if(sim.ended||sim.generating||sim.hints>=MAX_HINTS) return; sim.idle=setTimeout(giveHint, IDLE_MS); }
+function addHint(text){ const d=document.createElement('div'); d.className='msg hint'; d.innerHTML='<div class="who">💡 コーチからのヒント</div>'; d.appendChild(document.createTextNode(text)); chatBox.appendChild(d); scrollChat(); }
+async function giveHint(){
+  clearIdle();
+  if(sim.ended||sim.generating) return;
+  sim.generating=true;
+  try{
+    const sys='あなたはGD（グループディスカッション）練習のコーチです。ユーザーは「'+sim.userRole+'」役、お題は「'+sim.topic+'」。ユーザーが次の発言に詰まって黙っている想定です。これまでの議論を踏まえ、ユーザーが今すぐ言えるような具体的なヒントを1つ、'+sim.userRole+'役らしい切り口で示します。可能なら「例：〜」と短いセリフ例も添えます。1〜2文でやさしく簡潔に。出力はJSON {"hint":"..."} のみ。';
+    const txt=await callGemini(sys, transcriptText());
+    let hint=''; try{ hint=parseJSON(txt).hint||''; }catch(e){ hint=(txt||'').trim(); }
+    if(hint){ addHint(hint); sim.hints++; }
+  }catch(e){}
+  finally{ sim.generating=false; if(sim.hints<MAX_HINTS) scheduleIdle(); }
+}
 
 /* --- タイマー --- */
 const simTimerEl=document.getElementById('simTimer');

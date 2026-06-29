@@ -31,9 +31,10 @@
   /* タブ */
   nav.tabs{ position:sticky; top:10px; z-index:50; display:flex; gap:4px; background:rgba(255,255,255,.72);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:6px; border:1px solid rgba(255,255,255,.8);
-    border-radius:18px; max-width:640px; margin:8px auto 0; box-shadow:var(--shadow-sm);}
-  nav.tabs button{ flex:1; border:0; border-radius:13px; padding:10px 4px; font-size:.78rem; font-weight:700;
-    background:transparent; color:var(--sub); cursor:pointer; transition:.25s; letter-spacing:.02em;}
+    border-radius:18px; max-width:640px; margin:8px auto 0; box-shadow:var(--shadow-sm); overflow-x:auto; scrollbar-width:none;}
+  nav.tabs::-webkit-scrollbar{ display:none;}
+  nav.tabs button{ flex:1 0 auto; min-width:50px; border:0; border-radius:13px; padding:10px 8px; font-size:.76rem; font-weight:700;
+    background:transparent; color:var(--sub); cursor:pointer; transition:.25s; letter-spacing:.01em; white-space:nowrap;}
   nav.tabs button.active{ background:var(--grad); color:#fff; box-shadow:0 8px 18px -6px rgba(255,90,70,.55);}
 
   section{ display:none; padding-top:16px; animation:rise .35s cubic-bezier(.2,.8,.2,1);}
@@ -49,6 +50,8 @@
   .role::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:var(--accent);}
   .role.mc::before{background:var(--r-mc);} .role.note::before{background:var(--r-note);}
   .role.time::before{background:var(--r-time);} .role.pres::before{background:var(--r-pres);}
+  .role.st1::before{background:#ff6a3d;} .role.st2::before{background:#16b277;} .role.st3::before{background:#f5a524;}
+  .role.st4::before{background:#3b9eff;} .role.st5::before{background:#ff4d8d;}
   .role-head{ display:flex; align-items:center; gap:12px; cursor:pointer;}
   .role-icon{ font-size:1.4rem; width:46px; height:46px; display:flex; align-items:center; justify-content:center; background:var(--card2); border-radius:15px; flex:0 0 auto;}
   .role-head h3{ margin:0; font-size:1rem; font-weight:800;}
@@ -159,7 +162,8 @@
 
 <nav class="tabs wrap">
   <button data-tab="sim" class="active">模擬GD</button>
-  <button data-tab="roles">役割とコツ</button>
+  <button data-tab="roles">役割</button>
+  <button data-tab="senpo">戦法</button>
   <button data-tab="topics">お題</button>
   <button data-tab="timer">タイマー</button>
   <button data-tab="flow">進行</button>
@@ -223,6 +227,13 @@
     <p class="sub" style="margin:0 0 14px">タップで各役割の詳しい立ち回り方・評価ポイントが開きます。まず自分の担当役を読み込み、他役の動きも把握しておくと連携できます。</p>
     <div id="roleList"></div>
     <div class="note-box">💡 <b>共通の心得</b>：結論を出すこと自体より「チームで協力して議論を前に進められたか」が見られています。発言量が多ければ良いわけではなく、論点を整理する・人の意見を引き出す・時間内にまとめる、といった貢献が評価されます。</div>
+  </section>
+
+  <!-- ===== 戦法 ===== -->
+  <section id="senpo">
+    <p class="sub" style="margin:0 0 14px">全員がリーダーになる必要はありません。自分に合う「型」を持ち、当日のメンバーを見て、今チームに欠けている役割へ柔軟にシフトできる人が最も高く評価されます。タップで各戦法の動き方が開きます。</p>
+    <div id="stratList"></div>
+    <div class="note-box">💡 <b>戦法の選び方</b>：誰が主導権を握りそうか、場を乱す人はいないかを見極め、「今チームに足りない動き」に回るのがコツ。複数の型を持っておくと当日対応できます。</div>
   </section>
 
   <!-- ===== お題 ===== -->
@@ -326,6 +337,39 @@ roles.forEach((r,i)=>{
     </div>`;
   el.querySelector('.role-head').onclick=()=>el.classList.toggle('open');
   roleList.appendChild(el);
+});
+
+/* ---------- 戦法データ ---------- */
+const strats=[
+ {cls:'st1',icon:'🎭',name:'「裏回し」戦法',one:'一歩引いた役（書記・タイムキーパー）から議論を実質コントロール',
+  sec:[['狙い',['目立つリーダーはハイリスク。前に出ずに、論理的な整理と進行で評価される']],
+   ['具体的な動き',['書記で議論支配：単にメモを取るだけでなく「つまり、こういうことですよね？」と要約・可視化し、議論の方向性を握る','タイムキーパーで強制進行：「残り〇分なのでアイデア出しは切って、まとめに入りましょう」と時間を理由にフェーズを切り替える']],
+   ['使いどころ',['すでに主導権を握る人がいる／リーダー争いを避けたいとき','自分が書記・タイムキーパー役のとき']]]},
+ {cls:'st2',icon:'🤝',name:'バランサー・対立解消戦法',one:'停滞・対立・クラッシャー発生時にチームを救い、協調性と問題解決力を示す',
+  sec:[['狙い',['場が割れたり止まったりした時に、チームを前へ進める“救い手”として評価される']],
+   ['具体的な動き',['対立を第3の案で昇華：A案とB案で割れたら折衷案を出す、または共通の目的に立ち返って新しいC案を提案し、合意形成へ導く','クラッシャーを活かす：独演説を「なるほど、そういう視点ですね」と一度受け止め、「まだ発言していない〇〇さんはどう思いますか？」とパスを回して整理する']],
+   ['使いどころ',['意見が二分した／議論が停滞したとき','一人で喋り続ける人や、場を乱す人がいるとき']]]},
+ {cls:'st3',icon:'🧭',name:'フレームワーク駆使戦法',one:'3C・SWOT・ロジックツリーなどの“型”で議論を論理的に構造化する',
+  sec:[['狙い',['アイデアの量で勝負せず、整理力・構造化力で貢献する']],
+   ['具体的な動き',['脱線・混乱したタイミングで「一度、3C（市場・競合・自社）で論点を整理しませんか？」と提案する','ロジックツリーで論点を分解し、抜け漏れを防ぐ']],
+   ['注意',['「とりあえずSWOTで」と無理に型へ当てはめると“目的を見失っている”と減点される。あくまで議論を整理する羅針盤として使う']],
+   ['使いどころ',['議論が発散して収拾がつかないとき']]]},
+ {cls:'st4',icon:'🔍',name:'良問・検証（深掘り）戦法',one:'鋭い質問で議論の解像度を上げ、自分が案を出さなくても深化に貢献する',
+  sec:[['狙い',['ゼロから発案するのが苦手でも、問いの力で議論を前進させる']],
+   ['具体的な動き',['漠然とした案に「具体的にどの層をターゲットにしますか？」「その効果はどう測定できますか？」と、検証可能で具体的な問いを投げる','前提や根拠を確認し、議論の精度を上げる']],
+   ['使いどころ',['アイデアが抽象的で深まらないとき','自分から案を出すのが苦手なとき']]]},
+ {cls:'st5',icon:'🐟',name:'コバンザメ戦法',one:'優秀な人の意見に自分の視点を少し足して（1を1.1にして）返す',
+  sec:[['狙い',['無理に主導せず、確実に加点を積み上げる']],
+   ['具体的な動き',['「賛成です。特に〇〇の観点（実現可能性やコストなど）から見て良いと思います」と、一言の視点を添えて返す']],
+   ['使いどころ',['自信がないとき／議論についていくのが精一杯なとき']]]},
+];
+const stratList=document.getElementById('stratList');
+strats.forEach(s=>{
+  const el=document.createElement('div'); el.className='card role '+s.cls;
+  let body=''; s.sec.forEach(p=>{ body+='<h4>■ '+p[0]+'</h4><ul>'+p[1].map(x=>'<li>'+x+'</li>').join('')+'</ul>'; });
+  el.innerHTML='<div class="role-head"><div class="role-icon">'+s.icon+'</div><div><h3>'+s.name+'</h3><div class="one">'+s.one+'</div></div><div class="chev">▶</div></div><div class="role-body">'+body+'</div>';
+  el.querySelector('.role-head').onclick=()=>el.classList.toggle('open');
+  stratList.appendChild(el);
 });
 
 /* ---------- お題データ ---------- */
@@ -609,7 +653,7 @@ async function giveHint(){
   if(sim.ended||sim.generating) return;
   sim.generating=true;
   try{
-    const sys='あなたはGD（グループディスカッション）練習のコーチです。ユーザーは「'+sim.userRole+'」役、お題は「'+sim.topic+'」。ユーザーが次の発言に詰まって黙っている想定です。これまでの議論を踏まえ、ユーザーが今すぐ言えるような具体的なヒントを1つ、'+sim.userRole+'役らしい切り口で示します。可能なら「例：〜」と短いセリフ例も添えます。1〜2文でやさしく簡潔に。出力はJSON {"hint":"..."} のみ。';
+    const sys='あなたはGD（グループディスカッション）練習のコーチです。ユーザーは「'+sim.userRole+'」役、お題は「'+sim.topic+'」。ユーザーが次の発言に詰まって黙っている想定です。これまでの議論を踏まえ、ユーザーが今すぐ言えるような具体的なヒントを1つ、'+sim.userRole+'役らしい切り口で示します。可能なら「例：〜」と短いセリフ例も添えます。状況に応じて、裏回し（書記・タイムキーパーで実質進行）／バランサー（折衷案やパス回し）／フレームワーク（3C・SWOT・ロジックツリーで整理）／良問（具体的で検証可能な質問）／コバンザメ（賛成＋自分の視点を一言）などの戦法を1つ織り交ぜてもよいです。1〜2文でやさしく簡潔に。出力はJSON {"hint":"..."} のみ。';
     const txt=await callGemini(sys, transcriptText());
     let hint=''; try{ hint=parseJSON(txt).hint||''; }catch(e){ hint=(txt||'').trim(); }
     if(hint){ addHint(hint); sim.hints++; }

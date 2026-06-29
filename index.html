@@ -488,7 +488,7 @@ startBtn.onclick=()=>{
   running=true; startBtn.textContent='一時停止'; startBtn.className='b-pause';
   tick=setInterval(()=>{
     remain--; render();
-    if(remain<=0){ stop(); beep(); document.getElementById('timerLabel').textContent='⏰ 終了！'; }
+    if(remain<=0){ stop(); beep(); document.getElementById('timerLabel').textContent='終了！'; }
   },1000);
 };
 document.getElementById('resetBtn').onclick=()=>{ stop(); remain=total; render(); document.getElementById('timerLabel').textContent='議論タイム'; };
@@ -688,7 +688,7 @@ async function runFeedback(){
       '<h4 style="color:var(--warn);margin:14px 0 4px">△ 改善点</h4><ul style="margin:0;padding-left:18px;font-size:.88rem">'+list(d.improve)+'</ul>'+
       '<h4 style="color:var(--accent);margin:14px 0 4px">総評</h4><p style="font-size:.88rem;margin:0">'+(d.summary||'')+'</p></div>'+backBtn();
     bindBack();
-  }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">AI講評</h2><div class="msg sys" style="max-width:100%">⚠️ '+e.message+'</div></div>'+backBtn(); bindBack(); }
+  }catch(e){ fb.innerHTML='<div class="card"><h2 class="title">AI講評</h2><div class="msg sys" style="max-width:100%">'+e.message+'</div></div>'+backBtn(); bindBack(); }
 }
 function backBtn(){ return '<button class="btn btn-main" id="fbBack" style="margin-top:4px">もう一度練習する</button>'; }
 function bindBack(){ const b=document.getElementById('fbBack'); if(b)b.onclick=()=>{ document.getElementById('simFeedback').style.display='none'; document.getElementById('simSetup').style.display='block'; }; }

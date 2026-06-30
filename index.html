@@ -185,8 +185,8 @@
           <button type="button" id="simKeyToggle">表示</button>
         </div>
         <label style="margin-top:10px">モデル</label>
-        <input id="simModel" value="gemini-2.0-flash" autocomplete="off">
-        <p class="mini">無料キーは <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> で発行できます（Googleアカウントでログイン →「Create API key」）。キーは公開ファイルには含まれず、あなたの端末内にのみ保存されます。うまく動かない時はモデル名を <b>gemini-2.5-flash</b> や <b>gemini-1.5-flash</b> に変えてみてください。</p>
+        <input id="simModel" value="gemini-2.5-flash" autocomplete="off">
+        <p class="mini">無料キーは <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> で発行できます（Googleアカウントでログイン →「Create API key」）。キーは公開ファイルには含まれず、あなたの端末内にのみ保存されます。既定は <b>gemini-2.5-flash</b> です。「無料枠の上限（429）」が出る時は <b>gemini-2.5-flash-lite</b> に変えると上限が広くなり改善します。</p>
       </div>
       <button class="btn btn-main" id="simStart">模擬GDを始める</button>
     </div>
@@ -515,7 +515,7 @@ flow.forEach((f,i)=>{
 const roleClass={'司会':'r-mc','書記':'r-note','タイムキーパー':'r-time','発表者':'r-pres'};
 const allRoles=['司会','書記','タイムキーパー','発表者'];
 const memberNames=['佐藤','鈴木','高橋','田中'];
-const sim={ userRole:'司会', topic:'', minutes:15, key:'', model:'gemini-2.0-flash', members:[], log:[], timer:null, remain:0, ended:false, generating:false, idle:null, hints:0 };
+const sim={ userRole:'司会', topic:'', minutes:15, key:'', model:'gemini-2.5-flash', members:[], log:[], timer:null, remain:0, ended:false, generating:false, idle:null, hints:0 };
 
 /* --- 設定UI --- */
 const simRoleBox=document.getElementById('simRole');
@@ -536,14 +536,14 @@ const simTopicSel=document.getElementById('simTopic');
 
 /* --- キー保存（localStorage：この端末のみ） --- */
 const keyInput=document.getElementById('simKey'), modelInput=document.getElementById('simModel');
-try{ const sk=localStorage.getItem('gd_gemini_key'); if(sk)keyInput.value=sk; const sm=localStorage.getItem('gd_gemini_model'); if(sm)modelInput.value=sm; }catch(e){}
+try{ const sk=localStorage.getItem('gd_gemini_key'); if(sk)keyInput.value=sk; let sm=localStorage.getItem('gd_gemini_model'); if(sm){ if(/gemini-(2\.0|1\.5)/.test(sm)) sm='gemini-2.5-flash'; modelInput.value=sm; localStorage.setItem('gd_gemini_model',sm); } }catch(e){}
 document.getElementById('simKeyToggle').onclick=()=>{ keyInput.type=keyInput.type==='password'?'text':'password'; };
 
 /* --- 開始 --- */
 document.getElementById('simStart').onclick=()=>{
   const key=keyInput.value.trim();
   if(!key){ alert('Gemini APIキーを入力してください。無料キーは Google AI Studio で発行できます。'); return; }
-  sim.key=key; sim.model=modelInput.value.trim()||'gemini-2.0-flash';
+  sim.key=key; sim.model=modelInput.value.trim()||'gemini-2.5-flash';
   try{ localStorage.setItem('gd_gemini_key',sim.key); localStorage.setItem('gd_gemini_model',sim.model); }catch(e){}
   const custom=document.getElementById('simTopicCustom').value.trim();
   let topic=custom;
@@ -580,10 +580,16 @@ function showTyping(on){ if(on){ if(typingEl)return; typingEl=document.createEle
 async function callGemini(system,user){
   const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(sim.model)+':generateContent?key='+encodeURIComponent(sim.key);
   const body={ systemInstruction:{parts:[{text:system}]}, contents:[{role:'user',parts:[{text:user}]}], generationConfig:{temperature:0.9, maxOutputTokens:1200, responseMimeType:'application/json'} };
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!res.ok){ let t=''; try{t=await res.text();}catch(e){} throw new Error('APIエラー('+res.status+')：キーやモデル名をご確認ください。'+(t?' '+t.slice(0,160):'')); }
-  const data=await res.json();
-  return (data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts||[]).map(p=>p.text||'').join('');
+  for(let attempt=0;attempt<3;attempt++){
+    let res;
+    try{ res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+    catch(e){ throw new Error('ネットワークに接続できませんでした。通信環境をご確認のうえ、もう一度お試しください。'); }
+    if(res.ok){ const data=await res.json(); return (data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts||[]).map(p=>p.text||'').join(''); }
+    if((res.status===429||res.status===503)&&attempt<2){ if(typingEl)typingEl.textContent='混雑のため少し待っています…'; await new Promise(r=>setTimeout(r,(attempt+1)*10000)); continue; }
+    if(res.status===429) throw new Error('AIの無料利用枠の上限に達したようです。1〜2分ほど待つと再び使えます。何度も出る場合は、設定でモデルを「gemini-2.5-flash-lite」（無料枠が広め）に変えてみてください。');
+    if(res.status===400||res.status===403||res.status===404) throw new Error('APIキーまたはモデル名に問題があるようです。設定でキーと、モデル名（例: gemini-2.5-flash）をご確認ください。');
+    throw new Error('AIへの接続でエラーが発生しました（'+res.status+'）。少し時間をおいて、もう一度お試しください。');
+  }
 }
 function parseJSON(txt){ let s=(txt||'').trim().replace(/^```json/i,'').replace(/^```/,'').replace(/```$/,'').trim(); return JSON.parse(s); }
 function transcriptText(){ if(!sim.log.length) return '（まだ発言はありません。あなたが議論の口火を切ります。）'; return sim.log.map(m=>(m.isUser?'【あなた】':'')+m.name+'（'+m.role+'役）：'+m.text).join('\n'); }
@@ -626,7 +632,7 @@ document.getElementById('simQuit').onclick=()=>{ if(confirm('模擬GDを中止�
 document.getElementById('simEnd').onclick=()=>{ if(!sim.ended){ sim.ended=true; clearIdle(); stopSimTimer(); runFeedback(); } };
 
 /* --- 無操作時のヒント（AIコーチ） --- */
-const IDLE_MS=30000, MAX_HINTS=3;
+const IDLE_MS=45000, MAX_HINTS=2;
 function clearIdle(){ if(sim.idle){ clearTimeout(sim.idle); sim.idle=null; } }
 function scheduleIdle(){ clearIdle(); if(sim.ended||sim.generating||sim.hints>=MAX_HINTS) return; sim.idle=setTimeout(giveHint, IDLE_MS); }
 function addHint(text){ const d=document.createElement('div'); d.className='msg hint'; d.innerHTML='<div class="who">コーチからのヒント</div>'; d.appendChild(document.createTextNode(text)); chatBox.appendChild(d); scrollChat(); }
